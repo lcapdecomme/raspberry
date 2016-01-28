@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>RaspberryPI - téléinformation</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pigments.css">
+  <script src="script.js"></script>
+</head>
+<body>
+  <h1>Téléinformation depuis le raspberry</h1>
+  <h2>Liens utiles</h2>
+  
+  <h3>D'autres l'ont déja fait : </h3>
+  <ol>                                                                             
+  <li><a href="http://lhuet.github.io/blog/2014/01/montage-teleinfo.html">Laurent Huet</a></li>
+  <li><a href="http://www.magdiblog.fr/gpio/teleinfo-edf-suivi-conso-de-votre-compteur-electrique/">Magdiblog</a></li>
+  <li><a href="http://www.frinux.fr/2015/01/25/afficher-et-analyser-les-donnees-teleinfo-du-compteur-edf-avec-raspberry-pi-et-nodejs/">Frinux</a></li>
+  <li><a href="https://hallard.me/gestion-de-la-teleinfo-avec-un-raspberry-pi-et-une-carte-arduipi/">Hallard</a></li>
+  </ol>
+  
+  <h3>Les spécifications d'ERDF sur la téléinformation </h3>
+  <ol>                                                                             
+  <li><a href="http://www.erdf.fr/sites/default/files/ERDF-NOI-CPT_02E.pdf">ERDF (v5)</a></li>
+  </ol>
+  
+  <h2>Prérequis</h2>
+    <p>Le seul vrai prérequis est que le compteur EDF envoie ce type d'information. Et d'après ce que j'ai lu : </p>
+    <ul>
+      <li>Pour les anciens compteurs avec disque, c'est mort</li>
+      <li>Pour les compteurs électroniques posés avant 2003-2005, c'est un peu la loterie</li>
+      <li>Et après cette date, c'est normallement activé par défaut</li>
+    </ul>
+    <p>Pour ma part, étant dans la deuxième catégorie, j'ai contacté ERDF qui, n'ayant pas réussi à m'activer la téléinformation, a changé le compteur.</p>
+    <p>Prix de l'intervention : <strong>30,70 &euro;</strong> (ce qui raisonnable)</p>
+    <p>Ensuite, il faut donc un octocoupleur SFH620A, une résistance 1.2 kΩ et une résistance 3.3 kΩ </p>   
+    <p>Enfin, n'étant pas doué pour la soudure, j'ai acheté une breadboard et du cable supplémentaire</p>    
+    <p>Prix du matos : <strong>17 &euro;</strong></p>
+    
+  <h3>Montage</h3>
+  
+  <h2>Le schéma</h2>
+  <img alt="schema" src="schema.jpg" class="center">
+  <pre class="center reduit">(*) Impossible de trouver l'auteur de ce schéma très présent sur le web</pre> 
+  <img alt="schema" src="montage.jpg" class="center">                   
+  <pre class="center reduit">(*) Concernant l'octocoupleur, il y a un sens de pose ... :-) Si mauvais sens, pas de réception de données ...</pre> 
+  <p>Les fils sont donc à brancher sur les deux sorties l1 et l2 situés en bas à droite du compteur (il faut enlever le cache).</p>
+  
+  <h2>Raspberry</h2>
+  <p>Le cmdline.txt est un fichier contenant des paramètres qui seront passés au kernel au moment du boot. Il faut donc désactiver l'écriture sur le port série en supprimant les lignes :
+  <pre>console=ttyAMA0,115200 kgdboc=ttyAMA0,115200</pre>
+  <p>A noter, qu'on peut le faire depuis l'écran de configuration</p>
+  <pre>sudo raspi-config (option 8 : Adbvanced puis A8)</pre>
+  <br>
+
+  <p>Ensuite il faut désactiver le login sur le port série en commentant la ligne suivante dans le fichier /etc/inittab </p>
+  <pre>#T0:23:respawn:/sbin/getty -L ttyAMA0 115200 vt100  /etc/inittab :</pre>
+
+  <p>un petit redémarrage ...</p>
+  <pre>shutdown -r now</pre>
+
+  <p>.. et sans attendre, un premier test, en écoutant sur le port série après l'avoir configuré la ligne </p>
+  <pre>stty -F /dev/ttyAMA0 1200 sane evenp parenb cs7 -crtscts</pre>
+  <pre>cat /dev/ttyAMA0</pre>
+  
+  <p><strong>Les caractéristiques de la ligne sont du 1200 bauds, 7 bits de données, parité paire, 1 bit stop</strong></p>
+           
+  <h3>Script</h3>
+  <p>Ce que je voulais faire, c'était de récupérer ces informations pour les stocker dans une base de données externe. En l'occurence, j'ai ouvert un compte chez MongoLab.</p>
+  <p>D'après ce que j'ai lu, il faut éviter autant que possible les opérations trop fréquentes d'écriture sur une carte SD.</p>
+  <p>Le plus simple est certainement de faire du python. Ma version du script (inspiré d'autres scripts et certainement à améliorer) : </p>
+<div class="hlcode">
+<div class="syntax"><pre> <span class="c1">#!/usr/bin/env python</span>
+<span class="c1"># NAME: teleinfoERDF.py</span>
+<span class="c1"># AUTHOR: Lionel Capdecomme</span>
+<span class="c1"># DATE  : 24/01/2016</span>
+<span class="c1"># COMMENT: Lecture des trames Teleinformation et sauvegarde dans BD MongoLab</span>
+
+<span class="kn">import</span> <span class="nn">serial</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">pymongo</span><span class="o">,</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">pymongo</span> <span class="kn">import</span> <span class="n">MongoClient</span>
+
+<span class="c1"># 0. Init variable </span>
+<span class="n">SERIAL</span> <span class="o">=</span> <span class="s1">'/dev/ttyAMA0'</span>
+<span class="n">MONGODB_URI</span> <span class="o">=</span> <span class="s1">'mongodb://<strong>user</strong>:<strong>password</strong>@<strong>adresseServeur</strong>:<strong>portServeur</strong>/<strong>nomDB</strong>'</span> 
+<span class="n">MONGODB_COLLECTION</span><span class="o">=</span><span class="s1">'<strong>nomCollection</strong>'</span>
+
+<span class="c1"># 1. Ouverture du port serie</span>
+<span class="k">try</span><span class="p">:</span>
+  <span class="n">ser</span> <span class="o">=</span> <span class="n">serial</span><span class="o">.</span><span class="n">Serial</span><span class="p">(</span>
+    <span class="n">port</span><span class="o">=</span><span class="n">SERIAL</span><span class="p">,</span>
+    <span class="n">baudrate</span> <span class="o">=</span> <span class="mi">1200</span><span class="p">,</span>
+    <span class="n">parity</span><span class="o">=</span><span class="n">serial</span><span class="o">.</span><span class="n">PARITY_EVEN</span><span class="p">,</span>
+    <span class="n">stopbits</span><span class="o">=</span><span class="n">serial</span><span class="o">.</span><span class="n">STOPBITS_ONE</span><span class="p">,</span>
+    <span class="n">bytesize</span><span class="o">=</span><span class="n">serial</span><span class="o">.</span><span class="n">SEVENBITS</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span>
+  <span class="k">print</span> <span class="s2">"Impossible d'ouvrir le port serie"</span> <span class="o">+</span> <span class="n">SERIAL</span>
+  <span class="k">print</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+  <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># 2. Lecture d'une trame complete</span>
+<span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">while</span> <span class="bp">True</span> <span class="p">:</span>
+ <span class="n">line</span><span class="o">=</span><span class="n">ser</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+ <span class="n">array</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">' '</span><span class="p">)</span>
+ <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">array</span><span class="p">)</span><span class="o">&gt;</span><span class="mi">1</span> <span class="p">:</span>
+  <span class="n">header</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">array</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">array</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+  <span class="c1"># Si ADCO 2 fois alors tour complet</span>
+  <span class="k">if</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"ADCO"</span> <span class="p">:</span> 
+    <span class="k">if</span> <span class="s1">'adresseConcentrateur'</span> <span class="ow">in</span> <span class="n">data</span> <span class="p">:</span> <span class="k">break</span> 
+    <span class="n">data</span><span class="p">[</span><span class="s1">'adresseConcentrateur'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"OPTARIF"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'optionTarif'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"PTEC"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'periodeTarifaire'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"IINST"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'intensiteInstant'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"ADPS"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'avertissementDepassement'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"PAPP"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'puissanceApparente'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"IMAX"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'intensiteMaximum'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"ISOUSC"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'intensiteSouscrit'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"HCHC"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'heuresCreuses'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+  <span class="k">elif</span> <span class="n">header</span> <span class="o">==</span> <span class="s2">"HCHP"</span> <span class="p">:</span> <span class="n">data</span><span class="p">[</span><span class="s1">'heuresPleines'</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+
+<span class="n">data</span><span class="p">[</span><span class="s1">'date'</span><span class="p">]</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+<span class="c1">#3. Sauvegarde dans le compte mongolab</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">MongoClient</span><span class="p">(</span><span class="n">MONGODB_URI</span><span class="p">)</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_default_database</span><span class="p">()</span>
+<span class="c1"># Choix de la collection </span>
+<span class="n">teleinfo</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="n">MONGODB_COLLECTION</span><span class="p">]</span>
+<span class="n">teleinfo</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<pre class="center">Code python mis en forme par <a href="http://pygments.org/">pygments</a></pre>
+</div>
+  
+</body> 
+</html>
