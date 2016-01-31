@@ -9,7 +9,8 @@
 </head>
 <body>
   <h1>Téléinformation depuis le raspberry</h1>
-  <h2>Liens utiles</h2>
+
+  <h2>A/ Liens utiles</h2>
   
   <h3>D'autres l'ont déja fait : </h3>
   <ol>                                                                             
@@ -24,7 +25,7 @@
   <li><a href="http://www.erdf.fr/sites/default/files/ERDF-NOI-CPT_02E.pdf">ERDF (v5)</a></li>
   </ol>
   
-  <h2>Prérequis</h2>
+  <h2>B/ Prérequis</h2>
     <p>Le seul vrai prérequis est que le compteur EDF envoie ce type d'information. Et d'après ce que j'ai lu : </p>
     <ul>
       <li>Pour les anciens compteurs avec disque, c'est mort</li>
@@ -37,16 +38,19 @@
     <p>Enfin, n'étant pas doué pour la soudure, j'ai acheté une breadboard et du cable supplémentaire</p>    
     <p>Prix du matos : <strong>17 &euro;</strong></p>
     
-  <h3>Montage</h3>
-  
-  <h2>Le schéma</h2>
-  <img alt="schema" src="schema.jpg" class="center">
+
+  <h2>C/ Montage</h2>
+  <h3>1 Schéma électrique</h3>
+  <img alt="schema" src="schemaElec.jpg" class="center">
   <pre class="center reduit">(*) Impossible de trouver l'auteur de ce schéma très présent sur le web</pre> 
+  <h3>2. Schéma</h3>
+  <img alt="schema" src="schema.jpg" class="center">
+  <h3>3. Résultat final</h3>
   <img alt="schema" src="montage.jpg" class="center">                   
   <pre class="center reduit">(*) Concernant l'octocoupleur, il y a un sens de pose ... :-) Si mauvais sens, pas de réception de données ...</pre> 
   <p>Les fils sont donc à brancher sur les deux sorties l1 et l2 situés en bas à droite du compteur (il faut enlever le cache).</p>
   
-  <h2>Raspberry</h2>
+  <h2>D/ Raspberry</h2>
   <p>Le cmdline.txt est un fichier contenant des paramètres qui seront passés au kernel au moment du boot. Il faut donc désactiver l'écriture sur le port série en supprimant les lignes :
   <pre>console=ttyAMA0,115200 kgdboc=ttyAMA0,115200</pre>
   <p>A noter, qu'on peut le faire depuis l'écran de configuration</p>
@@ -60,15 +64,17 @@
   <pre>shutdown -r now</pre>
 
   <p>.. et sans attendre, un premier test, en écoutant sur le port série après l'avoir configuré la ligne </p>
+  <p>Les caractéristiques sont <strong>1200 bauds, 7 bits de données, parité paire, 1 bit stop</strong>. Cela donne donc : </p>
   <pre>stty -F /dev/ttyAMA0 1200 sane evenp parenb cs7 -crtscts</pre>
   <pre>cat /dev/ttyAMA0</pre>
   
-  <p><strong>Les caractéristiques de la ligne sont du 1200 bauds, 7 bits de données, parité paire, 1 bit stop</strong></p>
            
-  <h3>Script</h3>
-  <p>Ce que je voulais faire, c'était de récupérer ces informations pour les stocker dans une base de données externe. En l'occurence, j'ai ouvert un compte chez MongoLab.</p>
-  <p>D'après ce que j'ai lu, il faut éviter autant que possible les opérations trop fréquentes d'écriture sur une carte SD.</p>
-  <p>Le plus simple est certainement de faire du python. Ma version du script (inspiré d'autres scripts et certainement à améliorer) : </p>
+  <h3>1. Script</h3>
+  <p>Ce que je voulais faire, c'était récupérer ces informations pour les stocker dans une base de données <strong>externe</strong>.</p>
+  <p><strong>Externe</strong> dans le sens "pas sur la carte", car d'après ce que j'ai lu, il faut éviter autant que possible les opérations trop fréquentes d'écriture sur une carte SD.</p>
+  <p>En l'occurence, j'ai ouvert un compte chez MongoLab.
+  <p>Le plus simple pour lire des données, les formatter et les déverser dans une base, c'est certainement de faire du python.</p>
+  <p>Ma version du script (inspiré d'autres scripts et certainement à améliorer) : </p>
 <div class="hlcode">
 <div class="syntax"><pre> <span class="c1">#!/usr/bin/env python</span>
 <span class="c1"># NAME: teleinfoERDF.py</span>
