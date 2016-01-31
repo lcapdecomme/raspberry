@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <title>RaspberryPI - température</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="pigments.css">
+  <script src="script.js"></script>
+</head>
+<body>
+  <h1>Mesure de température depuis le raspberry</h1>
+
+  <h2>A/ Liens utiles</h2>
+  
+  <h3>D'autres l'ont déja fait : </h3>
+  <ol>                                                                             
+  <li><a href="http://www.framboise314.fr/mesure-de-temperature-1-wire-ds18b20-avec-le-raspberry-pi/">Franboise 3.14</a></li>
+  <li><a href="https://www.domolio.fr/monitorer-la-temperature-avec-un-raspberry-pi-vite-fait-bien-fait/">Domolio</a></li>
+  <li><a href="https://blog.bandinelli.net/index.php?post/2014/11/23/Temp%C3%A9rature-suivie-avec-un-Raspberry-Pi-B%2C-une-sonde-DS18B20-et-Munin">Bandinelli</a></li>
+  <li><a href="https://www.cl.cam.ac.uk/projects/raspberrypi/tutorials/temperature/">Matthew Kirk</a></li>
+  <li><a href="https://jahislove314.wordpress.com/2014/07/16/afficher-la-temperature-dune-sonde-ds18b20-en-python-sur-le-raspberry-partie-2/">Jahislove314</a>
+  </ol>
+
+  
+  <h2>B/ Matériel</h2>
+    <p>Il faut une ou plusieurs sondes 1-wire DS18B20 et une résistance 4.7 kΩ </p>   
+    <p>J'ai pris aussi une breadboard et du cable supplémentaire</p>    
+    <p>Prix du matos : <strong>14 &euro;</strong> (Pour 5 sondes)</p>
+    
+    
+
+  <h2>C/ Montage</h2>
+  <h3>1 Schéma électrique</h3>
+  <img alt="schema" src="schemaElec.jpg" class="center">
+  <h3>2. Schéma avec le raspberry</h3>
+  <img alt="schema" src="schema.jpg" class="center">
+  <h3>3. Résultat final pour 3 sondes</h3>
+  <img alt="schema" src="montage.jpg" class="center">                   
+  
+  <h2>D/ Raspberry</h2>
+  <p>Pour que le noyau Linux sache gérer le composant 1-wire DS18B20, il faut déclarer le bus 1-wire et le module de la famille 28h (capteurs de température).</p>
+  <p>Pour cela, dans /etc/modules, ajouter deux lignes w1-gpio et w1-therm.</p>
+  <pre>sudo cat  /etc/modules
+# /etc/modules: kernel modules to load at boot time.
+#
+# This file contains the names of kernel modules that should be loaded
+# at boot time, one per line. Lines beginning with "#" are ignored.
+# Parameters can be specified after the module name.
+
+snd-bcm2835
+
+w1-gpio
+w1-therm</pre>
+
+  <p>A noter que la commande modprobe permet de charger un module sans avoir à redémarrer</p>
+  <pre>modprobe w1-therm
+modprobe w1-gpio</pre>
+
+  <p>un petit redémarrage ...</p>
+  <pre>shutdown -r now</pre>
+
+  <p>Pour vérifier que le système a bien reconnu les sondes, il suffit de regarder le répertoire /sys/bus/w1/devices.</p>
+  <p>Chaque sonde est identifiée par un numéro unique qui commence toujours par "28" donc. On doit trouver autant de répertoire avec ce numéro que de sondes utilisées</p>
+<pre>ls /sys/bus/w1/devices/
+28-031574449aff  28-03157474cdff  28-0315747700ff  w1_bus_master1</pre>
+<p>Mes trois sondes sont bien détectées :-).</p>
+
+ <p>Dans chaque répertoire, un fichier w1_slave qui est mis à jour régulièrement par la sonde. Ce fichier contient deux lignes :</p>
+ <ol>
+  <li>Le checksum a YES pour dire que le fichier est ok.</li>
+  <li>La température après le "t=" en celcius (sans virgule et donc multiplié par 1000)</li>
+  </ol>
+<pre>cat w1_slave    
+72 01 4b 46 7f ff 0e 10 57 : crc=57 YES
+72 01 4b 46 7f ff 0e 10 57 t=23125</pre>
+
+           
+  <h3>1. Script</h3>
+  <p>Le but de mon script est de parcourir ces trois fichiers pour stocker à intervalle régulier dans une base de données <strong>externe</strong> mes trois températures.</p>
+  <p><strong>Externe</strong> dans le sens "pas sur la carte", car d'après ce que j'ai lu, il faut éviter autant que possible les opérations trop fréquentes d'écriture sur une carte SD.</p>
+  <p>En l'occurence, j'ai ouvert un compte chez MongoLab.
+  <p>Le plus simple pour lire des données, les formatter et les déverser dans une base, c'est certainement de faire du python.</p>
+  <p>Ma version du script (inspiré d'autres scripts et certainement à améliorer) : </p>
+<div class="hlcode">
+<div class="syntax"><pre> <span class="c1">#!/usr/bin/env python</span>
+<span class="c1"># NAME: teleinfoERDF.py</span>
+<span class="c1"># AUTHOR: Lionel Capdecomme</span>
+<span class="c1"># DATE  : 24/01/2016</span>
+<span class="c1"># COMMENT: Lecture des températures issus des sondes et sauvegarde dans BD MongoLab</span>
+
+<span class="kn">import</span> <span class="nn">serial</span><span class="o">,</span> <span class="nn">json</span><span class="o">,</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">pymongo</span><span class="o">,</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">pymongo</span> <span class="kn">import</span> <span class="n">MongoClient</span>
+
+<span class="c1"># 0. Initialisation variable Mongo</span>
+<span class="n">MONGODB_URI</span> <span class="o">=</span> <span class="s1">'mongodb://<strong>user</strong>:<strong>password</strong>@<strong>adresseServeur</strong>:<strong>portServeur</strong>/<strong>nomDB</strong>'</span> 
+<span class="n">MONGODB_COLLECTION</span><span class="o">=</span><span class="s1">'<strong>nomCollection</strong>'</span>
+
+<span class="c1"># Initialisation temperature </span>
+<span class="n">base_dir</span> <span class="o">=</span> <span class="s1">'/sys/bus/w1/devices/'</span>
+<span class="n">nbSondes</span><span class="o">=</span><span class="mi">3</span>
+<span class="n">nbProps</span><span class="o">=</span><span class="mi">3</span> <span class="c1"># 1:lieu, 2: nom du fichier, 3:valeur</span>
+<span class="n">sondes</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nbProps</span><span class="p">)]</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">nbSondes</span><span class="p">)]</span>
+<span class="n">sondes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="s2">"salon"</span>
+<span class="n">sondes</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="s2">"28-031574449aff"</span>
+<span class="n">sondes</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="s2">"chambre"</span>
+<span class="n">sondes</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="s2">"28-03157474cdff"</span>
+<span class="n">sondes</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="s2">"exterieur"</span>
+<span class="n">sondes</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="s2">"28-0315747700ff"</span>
+
+<span class="c1"># Fonction ouverture et lecture d'un fichier</span>
+<span class="k">def</span> <span class="nf">lireFichier</span><span class="p">(</span><span class="n">fichier</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">fichier</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">)</span>
+    <span class="n">lignes</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">lignes</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="c1"># Lecture des temperatures</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">nbSondes</span><span class="p">):</span>
+    <span class="n">sonde</span> <span class="o">=</span> <span class="n">base_dir</span> <span class="o">+</span> <span class="n">sondes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">"/w1_slave"</span>
+    <span class="n">lignes</span> <span class="o">=</span> <span class="n">lireFichier</span><span class="p">(</span><span class="n">sonde</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">lignes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">!=</span> <span class="s1">'YES'</span><span class="p">:</span> <span class="c1"># lit les 3 derniers char de la ligne 0 et recommence si pas YES</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+        <span class="n">lignes</span> <span class="o">=</span> <span class="n">lireFichier</span><span class="p">(</span><span class="n">sonde</span><span class="p">)</span>
+
+    <span class="c1"># Fichier ok, lecture seconde ligne </span>
+    <span class="n">temp_raw</span> <span class="o">=</span> <span class="nb">int</span> <span class="p">(</span><span class="n">lignes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"="</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">temp_raw</span> <span class="o">/</span> <span class="mf">1000.0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">sondes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">value</span> <span class="c1"># le 2 arrondi a 2 chiffres apres la virgule</span>
+    <span class="k">print</span> <span class="n">sondes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span><span class="s2">"="</span><span class="p">,</span><span class="n">sondes</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> 
+
+<span class="c1"># Le tableau sauvegarde en BD</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">'sondes'</span><span class="p">]</span><span class="o">=</span><span class="n">sondes</span>
+<span class="n">data</span><span class="p">[</span><span class="s1">'date'</span><span class="p">]</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+<span class="c1">#3. Sauvegarde dans le compte mongolab</span>
+<span class="n">client</span> <span class="o">=</span> <span class="n">pymongo</span><span class="o">.</span><span class="n">MongoClient</span><span class="p">(</span><span class="n">MONGODB_URI</span><span class="p">)</span>
+<span class="n">db</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_default_database</span><span class="p">()</span>
+<span class="c1"># Choix de la collection </span>
+<span class="n">teleinfo</span> <span class="o">=</span> <span class="n">db</span><span class="p">[</span><span class="n">MONGODB_COLLECTION</span><span class="p">]</span>
+<span class="n">teleinfo</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+</div>
+
+
+<pre class="center">Code python mis en forme par <a href="http://pygments.org/">pygments</a></pre>
+  
+</body> 
+</html>
