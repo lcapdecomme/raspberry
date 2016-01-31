@@ -144,6 +144,12 @@ modprobe w1-gpio</pre>
 
 
 <pre class="center">Code python mis en forme par <a href="http://pygments.org/">pygments</a></pre>
-  
+
+<p>Dernière remarque, si j'avais choisi de ne pas charger les modules au lancement du raspbery, je devrais le faire dans le script python (au début)</p>
+<pre>## module GPIO 1-wire et capteur de temperature #####
+system('modprobe w1-gpio')
+system('modprobe w1-therm')</pre>
+<br>
+
 </body> 
 </html>
