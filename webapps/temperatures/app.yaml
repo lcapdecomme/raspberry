@@ -1,0 +1,21 @@
+application: temperatures-1214
+version: 1
+runtime: python27
+api_version: 1
+threadsafe: true
+
+handlers:
+- url: /static/css
+  static_dir: static/css
+- url: /static/images
+  static_dir: static/images
+- url: /static/bootstrap/css
+  static_dir: static/bootstrap/css
+- url: /.*
+  script: pagePrincipale.app
+
+libraries:
+- name: webapp2
+  version: latest
+- name: jinja2
+  version: latest
