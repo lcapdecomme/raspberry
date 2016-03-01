@@ -1,9 +1,3 @@
- #!/usr/bin/env python
-# NAME: pagePrincipale.py
-# AUTHOR: Lionel Capdecomme
-# DATE  : 06/02/2016
-# COMMENT: Classe principale permettant d'afficher les températures
-
 # [START imports]
 import sys
 sys.path.insert(0, 'libs')
@@ -30,7 +24,7 @@ def convertDate(dateTraitement):
 	month = int(datetime.strftime(dateTraitement, "%m"))
 	year=datetime.strftime(dateTraitement, "%Y")
 	mois=['Janvier','Fevrier','Mars','Avril','Mai','Juin','Juillet','Aout','Septembre','Octobre','Novembre','Decembre']
-	return day + " " + mois[month] + " " + year
+	return day + " " + mois[month-1] + " " + year
 
 
 def dateEnClair(dateTraitement):
@@ -46,7 +40,7 @@ class MainPage(webapp2.RequestHandler):
 	def get(self):
 		r = requests.get(http_start+http_type, params=api, headers=headers)
 		data = json.loads(r.text)
-		dateTraitement = datetime.strptime(data[0]['dateTraitement']['$date'],'%Y-%m-%dT%H:%M:%S.%fZ')
+		dateTraitement = datetime.strptime(data[0]['dateTraitement']['$date'],'%Y-%m-%dT%H:%M:%S.%fZ') 
 		#self.response.write(data)
 		#Array Json en une liste d'objets
 		listeSondes = [Sonde(**k) for k in data]
@@ -55,7 +49,7 @@ class MainPage(webapp2.RequestHandler):
 		template_values = {
 			'temperatures': listeSondes,
 			'date' : dateEnClair(dateTraitement),
-			'heure' : datetime.strftime(dateTraitement, "%H:%M:%S"),
+			'heure' : datetime.strftime(dateTraitement, "%H:%M"),
 		}
 		template = JINJA_ENVIRONMENT.get_template('index.html')
 		self.response.write(template.render(template_values))
@@ -63,4 +57,4 @@ class MainPage(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainPage),
-], debug=False)
+], debug=True)

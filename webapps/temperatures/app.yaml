@@ -7,10 +7,14 @@ threadsafe: true
 handlers:
 - url: /static/css
   static_dir: static/css
+- url: /static/js
+  static_dir: static/js
 - url: /static/images
   static_dir: static/images
 - url: /static/bootstrap/css
   static_dir: static/bootstrap/css
+- url: /stat
+  script: pageStatistique.app
 - url: /.*
   script: pagePrincipale.app
 
