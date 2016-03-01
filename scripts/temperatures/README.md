@@ -8,12 +8,12 @@ Ce script se connecte à la bd mongo sur mLab et parcours tous les enregistrement
 
 ## voirTemperature.py
 
-Ce script interroge les sondes connectées au raspeberryPi et affiche les températures instantannées.
+Ce script python interroge les sondes connectées au raspeberryPi et affiche les températures instantannées.
 
 
 ## sauveTemperature.py
 
-Ce script ajoute un les relevés des sondes en base puis calcule le bilan et les statistiques par sonde. CE script va donc : 
+Ce script ajoute les relevés des sondes en base puis calcule le bilan et les statistiques par sonde. Ce script va donc : 
 
 1. Ajouter un enregistrement contenant les relevés des sondes dans la collection **MONGODB_COLLECTION**
 
