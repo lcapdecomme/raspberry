@@ -1,8 +1,9 @@
- #!/usr/bin/env python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # NAME: listeTemperature.py
 # AUTHOR: Lionel Capdecomme
 # DATE  : 04/02/2016
-# COMMENT: Lecture des trames Teleinformation depuis la BD MongoLab et affiche les valeurs mini/maxi/courante d'une sonde en particulier
+# COMMENT: Lecture des releves depuis la BD MongoLab et affiche les valeurs mini/maxi/courante d'une sonde en particulier
 
 import serial, json, sys, pymongo, datetime, time
 from pymongo import MongoClient
@@ -12,7 +13,6 @@ from datetime import datetime
 # Ces trois propriétés sont à personnaliser !!!!
 MONGODB_URI = 'mongodb://user:password@serveur:port/basededonnee' 
 MONGODB_COLLECTION='collection'
-MONGODB_COLLECTION_BILAN='collection_bilan'
 
 #3. Sauvegarde dans le compte mongolab
 client = pymongo.MongoClient(MONGODB_URI)

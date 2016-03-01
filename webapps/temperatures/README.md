@@ -16,9 +16,9 @@ La base mongoLab contient trois collections :
 
 1. **temperature** : relevés toutes les heures des températures pour l'ensemble des sondes
 
-2. **temperature_bilan** : données de la page d'accueil. Ces données sont calculées par le batch sauveTemperature.py
+2. **temperature_bilan** : données de la page d'accueil. Ces données sont calculées par le batch sauveTemperature.py. On trouve donc uniquement un enrgistrement par sonde.
 
-3. **temperature_stat** : données des pages statistiques. Ces données sont calculées également par le batch sauveTemperature.py
+3. **temperature_stat** : données des pages statistiques. Ces données sont calculées également par le batch sauveTemperature.py. On trouve donc uniquement un enrgistrement par sonde.
 
 
 ## Paramétrage

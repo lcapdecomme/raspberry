@@ -12,13 +12,13 @@ nbProps=3 # 1:lieu, 2: nom du fichier, 3:valeur
 sondes=[[0 for row in range(0,nbProps)] for col in range(0,nbSondes)]
 #Nom et id de la sonde 1
 sondes[0][0]="salon"
-sondes[0][1]="28-031574449aff"
+sondes[0][1]="28-031512449dff"
 #Nom et id de la sonde 2
 sondes[1][0]="chambre"
-sondes[1][1]="28-03157474cdff"
+sondes[1][1]="28-03151874c1ff"
 #Nom et id de la sonde 3
 sondes[2][0]="exterieur"
-sondes[2][1]="28-0315747700ff"
+sondes[2][1]="28-0314567700ff"
 
 # Fonction ouverture et lecture d'un fichier
 def lireFichier(fichier):
