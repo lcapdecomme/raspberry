@@ -2,7 +2,7 @@
 import sys
 sys.path.insert(0, 'libs')
 import os, jinja2, webapp2, requests, json, datetime, re
-from datetime import datetime
+from datetime import datetime, timedelta
 from collections import namedtuple
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -98,49 +98,96 @@ def removeFirstComma(temp):
 #Retourne l'echelle pour le graphique semaine
 #Cela devrait ressembler a qq chose comme  "\"Lu.\", \"Ma.\", \"Me.\", ...
 def getjourSemaine(d, s):
-	occur = s.count(',')
-	chaine=""
-	if occur>0:
-		#Tableau des jours de 0 a 6
-		semaine=['Lu.','Ma.','Me.','Je.','Ve.','Sa.','Di.']
-		pos = d.weekday()
-		chaine="\""+semaine[pos]+"\""
-		for i in range(occur,0,-1):
-			pos = pos - 1
-			if pos < 0:
-				pos=6
-			chaine="\""+semaine[pos]+"\","+chaine
-
-	return chaine
-
-
+    occur = s.count(',')
+    chaine=""
+    if occur>0:
+        #Tableau des jours de 0 a 6
+        semaine=['Lu','Ma','Me','Je','Ve','Sa','Di']
+        maDate=d
+        pos = maDate.weekday()
+        posd = maDate.day
+        chaine="\""+semaine[pos]+" "+str(posd)+"\""
+        for i in range(occur,0,-1):
+            maDate = maDate + timedelta(-1)
+            pos = maDate.weekday()
+            posd = maDate.day
+            if pos < 0:
+                pos=6
+            chaine="\""+semaine[pos]+" "+str(posd)+"\","+chaine
+ 
+    return chaine
+ 
+ 
+#Retourne l'echelle pour le graphique mois
+#Pour plus de lisibilité, un jour sur quatre est affiché
+#Cela devrait ressembler a qq chose comme  "4 fev.", "", "", "", "8 fev"
+def getjourMois(d, s):
+    occur = s.count(',')
+    chaine=""
+    #Tableau des mois de 0 a 11
+    mois=['Ja.','Fe.','Ma.','Av.','Ma.','Ju.','Ji.','Ao.','Se.','Oc.','No.','De.']
+    #1. nom des mois precedents
+    maDate=d
+    pos = maDate.day
+    posm = maDate.month-1
+    chaine="\""+str(pos)+" "+mois[posm]+"\""
+    inter=1
+    for i in range(occur,0,-1):
+        inter+=1
+        maDate = maDate + timedelta(-1)
+        pos = maDate.day
+        posm = maDate.month-1
+        if inter==3:
+            chaine="\""+str(pos)+" "+mois[posm]+"\","+chaine
+            inter=1
+        else:
+            chaine="\"\","+chaine
+    #Si moins d'une annee, on complete avec les mois suivants
+    occur = s.count(',')
+    maDate=d
+    inter=1
+    for i in range(30-occur):
+        inter+=1
+        maDate = maDate + timedelta(1)
+        pos = maDate.day
+        posm = maDate.month-1
+        if inter==3:
+            chaine=chaine+",\""+str(pos)+" "+mois[posm]+"\""
+            inter=1
+        else:
+            chaine=chaine+",\"\""
+ 
+    return chaine
+ 
+ 
+ 
 #Retourne l'echelle pour le graphique annee
 #Cela devrait ressembler a qq chose comme  "\"J.\", \"F.\", \"M.\", ...
 def getnomMois(d, s):
-	occur = s.count(',')
-	chaine=""
-	#Tableau des mois de 0 a 11
-	mois=['Ja.','Fe.','Ma.','Av.','Ma.','Ju.','Ji.','Ao.','Se.','Oc.','No.','De.']
-
-	#1. nom des mois precedents
-	pos = d.month-1
-	chaine="\""+mois[pos]+"\""
-	for i in range(occur,0,-1):
-		pos = pos - 1
-		if pos < 0:
-			pos=11
-		chaine="\""+mois[pos]+"\","+chaine
-  
+    occur = s.count(',')
+    chaine=""
+    #Tableau des mois de 0 a 11
+    mois=['Ja.','Fe.','Ma.','Av.','Ma.','Ju.','Ji.','Ao.','Se.','Oc.','No.','De.']
+ 
+    #1. nom des mois precedents
+    pos = d.month-1
+    chaine="\""+mois[pos]+"\""
+    for i in range(occur,0,-1):
+        pos = pos - 1
+        if pos < 0:
+            pos=11
+        chaine="\""+mois[pos]+"\","+chaine
     #Si moins d'une annee, on complete avec les mois suivants
-	occur = s.count(',')
-	pos = d.month-1
-	for i in range(12-occur):
-		pos = pos + 1
-		if pos >11:
-			pos=0
-		chaine=chaine+",\""+mois[pos]+"\""
-
-	return chaine
+    occur = s.count(',')
+    pos = d.month-1
+    for i in range(12-occur):
+        pos = pos + 1
+        if pos >11:
+            pos=0
+        chaine=chaine+",\""+mois[pos]+"\""
+ 
+    return chaine
+ 
 
 
 def isfloat(value):
@@ -174,49 +221,52 @@ def getmaxSerie(s):
 	return max
 
 
+ 
 # [START main_page]
 class StatPage(webapp2.RequestHandler):
-	def get(self):
-		libelle = self.request.get('libelle')
-		#self.response.write(libelle)
-		api["q"] = "{'libelle': '"+libelle+"'}"
-		r = requests.get(http_start+http_type, params=api, headers=headers)
-		data = json.loads(r.text)
-		#self.response.write(data)
-		dateTraitement = datetime.strptime(data[0]['dateTraitement']['$date'],'%Y-%m-%dT%H:%M:%S.%fZ') 
-
-		#Array Json en une liste d'objets
-		listeSondes = [Sonde(**k) for k in data]
-
-		#self.response.write(getminSemaine(listeSondes[0]).count(','))
-
-		#Data du template
-		template_values = {
-			'libelle' : libelle,
-			'date' : dateEnClair(dateTraitement),
-			'heure' : datetime.strftime(dateTraitement, "%H:%M"),
-			'seriesJour' : getJour(listeSondes[0]),
-			'minJour' : getminSerie(getJour(listeSondes[0])),
-			'maxJour' : getmaxSerie(getJour(listeSondes[0])),
-			'minSeriesSemaine' : getminSemaine(listeSondes[0]),
-			'maxSeriesSemaine' : getmaxSemaine(listeSondes[0]),
-			'minSemaine' : getminSerie(getminSemaine(listeSondes[0])),
-			'maxSemaine' : getmaxSerie(getmaxSemaine(listeSondes[0])),
-			'jourSemaine' : getjourSemaine(dateTraitement, getminSemaine(listeSondes[0])),
-			'minSeriesMois' : getminMois(listeSondes[0]),
-			'maxSeriesMois' : getmaxMois(listeSondes[0]),
-			'minMois' : getminSerie(getminMois(listeSondes[0])),
-			'maxMois' : getmaxSerie(getmaxMois(listeSondes[0])),
-			'minSeriesAnnee' : getminAnnee(listeSondes[0]),
-			'maxSeriesAnnee' : getmaxAnnee(listeSondes[0]),
-			'minAnnee' : getminSerie(getminAnnee(listeSondes[0])),
-			'maxAnnee' : getmaxSerie(getmaxAnnee(listeSondes[0])),
-			'nomMois' : getnomMois(dateTraitement, getminAnnee(listeSondes[0])),
-		}
-		template = JINJA_ENVIRONMENT.get_template('stat.html')
-		self.response.write(template.render(template_values))
+    def get(self):
+        libelle = self.request.get('libelle')
+        #self.response.write(libelle)
+        api["q"] = "{'libelle': '"+libelle+"'}"
+        r = requests.get(http_start+http_type, params=api, headers=headers)
+        data = json.loads(r.text)
+        #self.response.write(data)
+        dateTraitement = datetime.strptime(data[0]['dateTraitement']['$date'],'%Y-%m-%dT%H:%M:%S.%fZ') 
+ 
+        #Array Json en une liste d'objets
+        listeSondes = [Sonde(**k) for k in data]
+ 
+        #self.response.write(getminSemaine(listeSondes[0]).count(','))
+ 
+        #Data du template
+        template_values = {
+            'libelle' : libelle,
+            'date' : dateEnClair(dateTraitement),
+            'heure' : datetime.strftime(dateTraitement, "%H:%M"),
+            'seriesJour' : getJour(listeSondes[0]),
+            'minJour' : getminSerie(getJour(listeSondes[0])),
+            'maxJour' : getmaxSerie(getJour(listeSondes[0])),
+            'minSeriesSemaine' : getminSemaine(listeSondes[0]),
+            'maxSeriesSemaine' : getmaxSemaine(listeSondes[0]),
+            'minSemaine' : getminSerie(getminSemaine(listeSondes[0])),
+            'maxSemaine' : getmaxSerie(getmaxSemaine(listeSondes[0])),
+            'jourSemaine' : getjourSemaine(dateTraitement, getminSemaine(listeSondes[0])),
+            'minSeriesMois' : getminMois(listeSondes[0]),
+            'maxSeriesMois' : getmaxMois(listeSondes[0]),
+            'minMois' : getminSerie(getminMois(listeSondes[0])),
+            'maxMois' : getmaxSerie(getmaxMois(listeSondes[0])),
+            'jourMois' : getjourMois(dateTraitement, getminMois(listeSondes[0])),
+            'minSeriesAnnee' : getminAnnee(listeSondes[0]),
+            'maxSeriesAnnee' : getmaxAnnee(listeSondes[0]),
+            'minAnnee' : getminSerie(getminAnnee(listeSondes[0])),
+            'maxAnnee' : getmaxSerie(getmaxAnnee(listeSondes[0])),
+            'nomMois' : getnomMois(dateTraitement, getminAnnee(listeSondes[0])),
+        }
+        template = JINJA_ENVIRONMENT.get_template('stat.html')
+        self.response.write(template.render(template_values))
 # [END main_page]
-
+ 
 app = webapp2.WSGIApplication([
     ('/stat', StatPage),
 ], debug=True)
+

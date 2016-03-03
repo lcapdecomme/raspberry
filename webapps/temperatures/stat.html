@@ -47,7 +47,7 @@
                     <div class='title'>Min : {{minJour}}&nbsp;&nbsp;&nbsp;Max : {{maxJour}}</div>
                     <hr>
                     <div class="cont">
-                        <canvas id="chartJour" height="180"  ></canvas>
+                        <canvas id="chartJour" height="180" width="280"    ></canvas>
 
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                     <div class='title'>Min : {{minSemaine}}&nbsp;&nbsp;&nbsp;Max : {{maxSemaine}}</div>
                     <hr>
                     <div class="cont">
-                        <canvas id="chartSemaine"  height="180"  ></canvas>
+                        <canvas id="chartSemaine"  height="180" width="280"    ></canvas>
 
                     </div>
                 </div>
@@ -74,7 +74,7 @@
                     <div class='title'>Min : {{minMois}}&nbsp;&nbsp;&nbsp;Max : {{maxMois}}</div>
                     <hr>
                     <div class="cont">
-                        <canvas id="chartMois" height="180" ></canvas>
+                        <canvas id="chartMois" height="180" width="280"   ></canvas>
 
                     </div>
                 </div>
@@ -88,7 +88,7 @@
                     <div class='title'>Min : {{minAnnee}}&nbsp;&nbsp;&nbsp;Max : {{maxAnnee}}</div>
                     <hr>
                     <div class="cont">
-                        <canvas id="chartAnnee" height="180" ></canvas>
+                        <canvas id="chartAnnee" height="180" width="280"   ></canvas>
 
                     </div>
                 </div>
@@ -99,6 +99,29 @@
    	</div> <!-- /container -->
 
     <script type="text/javascript">
+                var options = {
+ 
+                    ///Boolean - Whether grid lines are shown across the chart
+                    scaleShowGridLines : true,
+ 
+                    //String - Colour of the grid lines
+                    scaleGridLineColor : "rgba(0,0,0,.05)",
+ 
+                    //Number - Width of the grid lines
+                    scaleGridLineWidth : 1,
+ 
+                    //Boolean - Whether to show horizontal lines (except X axis)
+                    scaleShowHorizontalLines: true,
+ 
+                    //Boolean - Whether to show vertical lines (except Y axis)
+                    scaleShowVerticalLines: true,
+ 
+                    // String - Scale label font colour
+                    scaleFontColor: "#B5B3B3",
+                    scaleFontSize: 10,
+                };
+ 
+
 
                 var dataJour = {
                     labels: [ "0h","","2h","","4h","","6h","","8h","","10h","","12h","","14h","","16h","","18h","","20h","","22h","" ],
@@ -115,7 +138,7 @@
                     ]
                 };
                 var ctxJour = document.getElementById("chartJour").getContext("2d");
-                var myLineChartJour = new Chart(ctxJour).Bar(dataJour);
+                var myLineChartJour = new Chart(ctxJour).Bar(dataJour, options);
 
                 var dataSemaine = {
                     labels: [ {{ jourSemaine|safe() }} ],
@@ -143,7 +166,7 @@
                     ]
                 };
                 var ctxSemaine = document.getElementById("chartSemaine").getContext("2d");
-                var myLineChartSemaine = new Chart(ctxSemaine).Line(dataSemaine);
+                var myLineChartSemaine = new Chart(ctxSemaine).Line(dataSemaine, options);
 
                 var dataMois = {
                     labels: [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30 ],
@@ -171,7 +194,7 @@
                     ]
                 };
                 var ctxMois = document.getElementById("chartMois").getContext("2d");
-                var myLineChartMois = new Chart(ctxMois).Line(dataMois);
+                var myLineChartMois = new Chart(ctxMois).Line(dataMois, options);
 
                 var dataAnnee = {
                     labels: [{{ nomMois|safe() }} ],
@@ -199,7 +222,7 @@
                     ]
                 };
                 var ctxAnnee = document.getElementById("chartAnnee").getContext("2d");
-                var myLineChartAnnee = new Chart(ctxAnnee).Line(dataAnnee);
+                var myLineChartAnnee = new Chart(ctxAnnee).Line(dataAnnee, options);
 
     </script>
 
