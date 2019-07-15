@@ -1,0 +1,598 @@
+<!doctype html>
+<html><head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="format-detection" content="telephone=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Consommation Electrique</title>
+    <meta name="description" content="Consommation électrique">
+    <meta name="author" content="L. Capdecomme">
+
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
+    <!-- Google Fonts call. Font Used Open Sans & Raleway -->
+    <link href="http://fonts.googleapis.com/css?family=Raleway:400,300" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+
+    <script src="/static/js/chart.min.js"></script>
+    <script src="/static/js/temp.js"></script>
+
+</head>
+
+<style>
+body {
+    color: #73879C;
+    background-color: #2A3F54;
+    outline: none;
+    font-family: "Helvetica Neue", Roboto, Arial, "Droid Sans", sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+}
+
+.tile_count .tile_stats_count {
+    border-left: 1px solid #2A3F54;
+    border-bottom: 1px solid #2A3F54;
+    padding: 0 0 15px;
+    height: 105px;
+    padding: 10px;
+}
+.tile_count .tile_stats_count .pave {
+    padding-left: 10px;
+    overflow: hidden;
+}
+.tile_stats_count span {
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.tile_stats_count .count {
+    font-size: 34px;
+    line-height: 47px;
+    font-weight: 600;
+}
+.count_bottom i {
+    width: 12px;
+}
+.green {
+    color: #1ABB9C;
+}
+.red {
+    color: #E74C3C;
+}
+nav {
+    background-color:#2A3F54 !important;
+    color: white;
+    padding: 5px 20px 5px 20px;
+}
+
+.navbar {
+    margin-bottom: 0px;
+}
+.container {
+    width: 100%;
+    color: #73879C;
+    background-color: #F7F7F7;
+}
+.panel {
+    background-color:white;
+    margin-top: 20px;
+    height: 340px;
+}
+.panel_Graph {
+    background-color:white;
+    margin-top: 20px;
+    height: 444px;
+}
+.panel h3 {
+    padding:0px 10px 10px 10px;
+    margin-top: 10px;
+}
+.pic_date h5, h5.count {
+	margin-top: 7px;
+	margin-bottom: 7px;
+}
+h3 small {
+    font-size: 60%;
+}
+.w_20,.w_40 {
+    display:inline-block;
+    padding: 0 10px 0 10px;
+}
+.w_20 {
+    width: 18%;
+}
+.w_40 {
+    width: 40%;
+}
+.pic_date {
+    padding-left: 50px;
+}
+.pic_val {
+    padding-right: 20px;
+}
+.graph {
+    text-align: center;
+}
+
+</style>
+
+<body>
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header pull-left">
+                <span class="lead"> <i class="fa fa-flash"></i> Suivi Elect.</span> | {{date }} {{ heure }} 
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container">
+
+        <!-- top tiles -->
+        <div class="row tile_count">
+            <div class="col-md-3 col-sm-6 col-xs-12 tile_stats_count">
+                <div class="pave">
+                    <span class="count_top"><i class="fa fa-plug"></i> Consommation instantanée</span>
+                    <div  onclick="toggle_jour(this)"  class="count green" >
+                        <span style="display:inline;">{{ puissanceWatt }} Watts</span>
+                        <span style="display:none;">{{ puissanceEuro }} &euro;</span>
+                    </div>
+                   <span class="count_bottom">Période tarifaire : <b>{{ periodeTarifaire }}</b></span>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12 tile_stats_count">
+                <div class="pave">
+                    <span class="count_top"><i class="fa fa-random"></i> Intensité instantanée</span>
+                    <div class="count green">{{ intensiteInstant }} A.</div>
+                    <span class="count_bottom">Max : <b> {{ intensiteMaximum }} A.</b></span>
+                    <span class="count_bottom">Souscrit : <b> {{ intensiteSouscrit }} A.</b></span>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12 tile_stats_count">
+                <div class="pave">
+                    <span class="count_top"><i class="fa fa-sun-o"></i> Heures pleines </span>
+                    <div class="count">{{ heuresPleines }} Wh</div>
+                    <span class="count_bottom">24 h : <b> {{augmentationHp}} Wh</b>
+                    &nbsp;&nbsp;Différence veille : 
+                    {% if augmentationHpVeille|int > 0 %}
+                        <i class="red">{{augmentationHpVeille|int}} Wh</i></span>
+                    {% else %}
+                        <i class="green">{{augmentationHpVeille|int}} Wh</i></span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 col-xs-12 tile_stats_count">
+                <div class="pave">
+                    <span class="count_top"><i class="fa fa-moon-o"></i> Heures creuses</span>
+                    <div class="count">{{ heuresCreuses }} Wh</div>
+                    <span class="count_bottom">24 h : <b> {{augmentationHc}} Wh</b>
+                    &nbsp;&nbsp;Différence veille : 
+                    {% if augmentationHcVeille|int > 0  %}
+                        <i class="red">{{augmentationHcVeille|int}} Wh</i></span>
+                    {% else %}
+                        <i class="green">{{augmentationHcVeille|int}} Wh</i></span>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        <!-- /top tiles -->
+
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3  onclick="toggle_jour(this)">Aujourd'hui : 
+                        <span class="count green" style="display:inline;">{{ totalJour }} Wh</span> 
+                        <span class="count green" style="display:none;">{{ totalJourEuro }} &euro;</span>
+                        <div>
+                            <small>min. : <b> {{ minJour }} Wh</b></small>&nbsp;&nbsp;&nbsp;
+                            <small>max. : <b> {{ maxJour }} Wh</b></small>
+                        </div>
+                    </h3>
+                    <div class="graph">
+                        <canvas id="chartJour" ></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3 onclick="toggle_jour(this)">30 jours : 
+                        <span class="count green" style="display:inline;">{{ totalMois }} Wh</span> 
+                        <span class="count green" style="display:none;">{{ totalMoisEuro }} &euro;</span>
+                        <div>
+                            <small>min. : <b> {{ minMois }} Wh</b></small>&nbsp;&nbsp;&nbsp;
+                            <small>max. : <b> {{ maxMois }} Wh</b></small>
+                        </div>
+                    </h3>
+                    <div class="graph">
+                        <canvas id="chartMois" ></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3 onclick="toggle_jour(this)">1 an : 
+                        <span class="count green" style="display:inline;">{{ totalAn }} Kwh</span> 
+                        <span class="count green" style="display:none;">{{ totalAnEuros }} &euro;</span>
+                        <div>
+                            <small>min. : <b> {{ minAn }} Kwh</b></small>&nbsp;&nbsp;&nbsp;
+                            <small>max. : <b> {{ maxAn }} Kwh</b></small>
+                        </div>
+                    </h3>
+                    <div class="graph">
+                        <canvas id="chartAn"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3>Suivi annuel (Janvier)</h3> 
+			        {% for a in annuel %}
+					<div class="row">
+                        <div class="col-md-2 col-sm-2 col-xs-2 pic_date">
+                              <h5>{{a.an}}</h5> 
+                        </div>
+                        <div class="col-md-10 col-sm-10 col-xs-10 pic_date">
+                             <h5 class="count">{{a.value/1000 }} Kwh 
+                    		 {% if a.diff|int > 0 %}
+								 (diff. <span class="red">{{a.diff/1000 }} Kwh</span>)
+                    		  {% endif %}
+							  </h5> 
+                        </div>
+                    </div> 
+			        {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3>Suivi annuel (Juillet)</h3> 
+			        {% for a in annuel_juillet %}
+					<div class="row">
+                        <div class="col-md-2 col-sm-2 col-xs-2 pic_date">
+                              <h5>{{a.an}}</h5> 
+                        </div>
+                        <div class="col-md-10 col-sm-10 col-xs-10 pic_date">
+                             <h5 class="count">{{a.value/1000 }} Kwh 
+                    		 {% if a.diff|int > 0 %}
+								 (diff. <span class="red">{{a.diff/1000 }} Kwh</span>)
+                    		  {% endif %}
+							  </h5> 
+                        </div>
+                    </div> 
+			        {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3 onclick="toggle_jour(this)">Suivi annuel (Juillet)
+                    </h3>
+                    <div class="graph">
+                        <canvas id="chartJuillet"></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+        <!-- /row -->
+
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3>Pic de consommation</h3>     
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                              <h5>{{ statMaxDate0 }} </h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal0/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMaxDate1 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal1/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMaxDate2 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal2/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMaxDate3 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal3/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMaxDate4 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal4/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMaxDate5 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal5/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMaxDate6 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal6/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMaxDate7 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count red">{{ statMaxTotal7/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                   
+                </div>
+            </div>
+
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3>Plus faible consommation</h3>     
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                              <h5>{{ statMinDate0 }} </h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal0/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMinDate1 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal1/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMinDate2 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal2/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMinDate3 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal3/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMinDate4 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal4/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMinDate5 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal5/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMinDate6 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal6/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                    <div class="row">
+                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                             <h5>{{ statMinDate7 }}</h5> 
+                        </div>
+                        <div class="col-md-6 col-sm-6 col-xs-6">
+                             <h5 class="count green">{{ statMinTotal7/1000 }} Kwh</h5> 
+                        </div>
+                    </div> 
+                   
+                </div>
+            </div>
+
+
+
+        <!-- row -->
+        <div class="row">
+            <div class="col-md-4 col-sm-6 col-xs-12">
+                <div class="panel">
+                    <h3>Suivi mensuel</h3>
+	               	<div style="overflow-y:auto; overflow-x:hidden; height:250px">
+				        {% for n in mensuel %}
+	                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+	                              <h5>{{n.mo}}/{{n.an}}:</h5> 
+	                        </div>
+	                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+	                             <h5 class="count">{{n.diff }} Kwh</h5> 
+	                        </div>
+				        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /row -->
+
+    </div>
+        <!-- /container -->
+
+
+    <nav class="navbar  navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header pull-right">
+                    <p class="pull-right">Projet sur <a href="https://github.com/lcapdecomme/raspberry">Github</a>  | 
+                    <span>  <i class="fa fa-flash"></i>  Capdecomme</span>
+                    </p>
+            </div>
+        </div>
+    </nav>
+
+
+    <script type="text/javascript">
+
+
+		window.chartColors = {
+			red: 'rgb(255, 99, 132)',
+			orange: 'rgb(255, 159, 64)',
+			yellow: 'rgb(255, 205, 86)',
+			green: 'rgb(75, 192, 192)',
+			blue: 'rgb(54, 162, 235)',
+			purple: 'rgb(153, 102, 255)',
+			grey: 'rgb(201, 203, 207)'
+		};
+
+        var options2 = {
+			responsive: true,
+			legend: {
+				display: false
+			},
+			title: {
+				display: false
+			}
+        };
+
+		var color = Chart.helpers.color;
+        var dataJour = {
+            labels: [ "1h","","3h","","5h","","7h","","9h","","11h","","13h","","15h","","17h","","19h","","21h","","23h","" ],
+            datasets: [
+                {
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.red,
+					borderWidth: 1,
+					data: [{{ serieJour }} ]
+                }
+            ]
+        };
+        var ctxJour = document.getElementById("chartJour").getContext("2d");
+        var myLineChartJour = new Chart(ctxJour, {
+			type: 'bar',
+			data: dataJour,
+			options: options2});
+
+
+        var dataMois = {
+            labels: [ {{ jourMois|safe() }} ],
+            datasets: [
+            {
+					backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.blue,
+					borderWidth: 1,
+                	data: [{{ serieMois }} ]
+            }
+            ]
+        };
+        var ctxMois = document.getElementById("chartMois").getContext("2d");
+        var myLineChartMois = new Chart(ctxMois, {
+			type: 'line',
+			data: dataMois,
+			options: options2});
+
+
+
+        var dataAn = {
+            labels: [ {{ labelMois|safe() }} ],
+            datasets: [
+            {
+					backgroundColor: color(window.chartColors.green).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.green,
+					borderWidth: 1,
+					steppedLine: true,
+                	data: [{{ serieAn }} ]
+            }
+            ]
+        };
+        var ctxAn = document.getElementById("chartAn").getContext("2d");
+        var myLineChartAn = new Chart(ctxAn, {
+			type: 'line',
+			data: dataAn,
+			options: options2});
+
+
+
+        var dataJuillet = {
+            labels: [ {{ labelJuillet|safe() }} ],
+            datasets: [
+            {
+					backgroundColor: [
+						window.chartColors.red,
+						window.chartColors.blue,
+						window.chartColors.green,
+						window.chartColors.orange,
+						window.chartColors.purple,
+						window.chartColors.grey,
+						window.chartColors.yellow,
+					],
+					borderColor: window.chartColors.green,
+					borderWidth: 1,
+                	data: [{{ serieJuillet }} ]
+            }
+            ]
+        };
+        var ctxAn = document.getElementById("chartJuillet").getContext("2d");
+        var myLineChartAn = new Chart(ctxAn, {
+			type: 'pie',
+			data: dataJuillet,
+			options: {
+				responsive: true,
+				legend: {
+					display: true
+				},
+				title: {
+					display: false
+				}
+			}
+			});
+
+
+
+        function toggle_jour(e) {
+            var spans = e.getElementsByTagName('span')
+            for (var i = 0; i < spans.length; i++) {
+                if (spans[i].style.display == 'none')
+                    spans[i].style.display = 'inline';
+                else
+                    spans[i].style.display = 'none';
+                }
+        }
+
+
+    </script>
+
+
+</body></html>

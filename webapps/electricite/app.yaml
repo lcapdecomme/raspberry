@@ -1,0 +1,25 @@
+application: electricite-1214
+version: 2
+runtime: python27
+# threadsafe is required but can be either true or 
+# false. For some package, it should be true e.g. Flask
+threadsafe: true
+api_version: 1
+
+handlers:
+- url: /static/css
+  static_dir: static/css
+- url: /static/js
+  static_dir: static/js
+- url: /static/images
+  static_dir: static/images
+- url: /static/fonts
+  static_dir: static/fonts
+- url: /.*
+  script: pagePrincipale.app
+
+libraries:
+- name: webapp2
+  version: latest
+- name: jinja2
+  version: latest
