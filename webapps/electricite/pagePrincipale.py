@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, 'libs')
 import os, jinja2, webapp2, requests, json
 from datetime import datetime
-from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getjourMois, Elec_bilan, getSommesAn, getJuillet
+from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getjourMois, Elec_bilan, getSommesAn, getJuillet, getValueMax
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -17,10 +17,10 @@ CLEF="<clef>"
 
 http_start = "https://api.mongolab.com/api/1/"
 
-http_type = "databases/<nomBase>/collections/edf_bilan"
-http_type_mensuel = "databases/<nomBase>/collections/edf_bilan_mensuel"
-http_type_annuel = "databases/<nomBase>/collections/edf_bilan_annuel"
-http_type_annuel_juillet = "databases/<nomBase>/collections/edf_bilan_annuel_juillet"
+http_type = "databases/<base>/collections/edf_bilan"
+http_type_mensuel = "databases/<base>/collections/edf_bilan_mensuel"
+http_type_annuel = "databases/<base>/collections/edf_bilan_annuel"
+http_type_annuel_juillet = "databases/<base>/collections/edf_bilan_annuel_juillet"
 
 api = {"apiKey": CLEF,"f":'{"_id": 0}'}
 api_order_mensuel = {"apiKey": CLEF,"f":'{"_id": 0}', "s":'{"numMois": 1}'}
@@ -73,6 +73,8 @@ class pagePrincipale(webapp2.RequestHandler):
 			
 		labelJuillet, serieJuillet = getJuillet(data_annuel_juillet)
 
+		maxConsoMensuel, minConsoMensuel = getValueMax(data_mensuel)
+		
 		#Data du template
 		template_values = {
 			'date' : dateEnClair(dateTraitement),
@@ -183,6 +185,8 @@ class pagePrincipale(webapp2.RequestHandler):
             'statMinhc6' : bilan.statMinhc6,
             'statMinhc7' : bilan.statMinhc7,
             'mensuel' : data_mensuel,
+            'maxConsoMensuel' : maxConsoMensuel,
+            'minConsoMensuel' : minConsoMensuel,
             'annuel' : data_annuel,
             'annuel_juillet' : data_annuel_juillet
 			#'libelle' : libelle,

@@ -2,7 +2,6 @@
 # [START imports]
 from datetime import datetime, timedelta
 from collections import namedtuple
-from ctypes.wintypes import DOUBLE
 
 TENSION_VOLT = 230
 tarifHP = 0.16360 
@@ -138,6 +137,18 @@ def getMois(s):
 	derniereVal, chaine, ecart =concatDifference(chaine, s.jour2, derniereVal, ecart)
 	derniereVal, chaine, ecart =concatDifference(chaine, s.jour1, derniereVal, ecart)
 	return chaine
+
+
+# Retourne la valeur max de la liste mensuel 
+def getValueMax(liste):
+	maxValue=0
+	minValue=99999999999
+	for element in liste:
+		if int(element['diff'])>maxValue:
+			maxValue=int(element['diff'])
+		if int(element['diff'])<minValue and int(element['diff'])!= 0:
+			minValue=int(element['diff'])
+	return maxValue, minValue
 
 
 # Retourne les douze dernière valeure 
@@ -369,7 +380,7 @@ def getJuillet(serie):
 	nomAnnees=""
 	for element in serie:
 		if int(element['diff']) != 0:
-			serieValeurs=serieValeurs+str(int(element['diff'])/1000)+","
+			serieValeurs=serieValeurs+str(int(element['diff']))+","
 			nomAnnees=nomAnnees+"'"+element['an']+"',"
 
 	return nomAnnees, serieValeurs

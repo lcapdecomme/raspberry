@@ -18,6 +18,7 @@
     <link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
 
     <script src="/static/js/chart.min.js"></script>
+    <script src="/static/js/jquery-3.4.1.min.js"></script>
     <script src="/static/js/temp.js"></script>
 
 </head>
@@ -73,7 +74,7 @@ nav {
 .container {
     width: 100%;
     color: #73879C;
-    background-color: #F7F7F7;
+    background-color: #E6EEEE;
 }
 .panel {
     background-color:white;
@@ -114,6 +115,13 @@ h3 small {
 }
 .graph {
     text-align: center;
+}
+.dataMensuel div.dataPercent h6 {
+	background-color: rgba(54, 162, 235, 0.5);
+	color: rgb(59, 71, 79);
+	border: solid 1px rgb(54, 162, 235);
+	padding: 5px;
+	margin: 2px;
 }
 
 </style>
@@ -200,7 +208,7 @@ h3 small {
 
             <div class="col-md-4 col-sm-6 col-xs-12">
                 <div class="panel">
-                    <h3 onclick="toggle_jour(this)">30 jours : 
+                    <h3 onclick="toggle_jour(this)">30 jours :
                         <span class="count green" style="display:inline;">{{ totalMois }} Wh</span> 
                         <span class="count green" style="display:none;">{{ totalMoisEuro }} &euro;</span>
                         <div>
@@ -279,10 +287,6 @@ h3 small {
                     </div>
                 </div>
             </div>
-
-
-        </div>
-        <!-- /row -->
 
 
             <div class="col-md-4 col-sm-6 col-xs-12">
@@ -427,21 +431,26 @@ h3 small {
                 </div>
             </div>
 
-
-
-        <!-- row -->
-        <div class="row">
             <div class="col-md-4 col-sm-6 col-xs-12">
                 <div class="panel">
-                    <h3>Suivi mensuel</h3>
-	               	<div style="overflow-y:auto; overflow-x:hidden; height:250px">
+                    <h3>Suivi mensuel
+                        <div>
+                            <small>min. : <b> {{ minConsoMensuel }} Kwh</b></small>&nbsp;&nbsp;&nbsp;
+                            <small>max. : <b> {{ maxConsoMensuel }} Kwh</b></small>
+                        </div>
+                    </h3>
+	               	<div class="dataMensuel" style="overflow-y:auto; overflow-x:hidden; height:250px">
 				        {% for n in mensuel %}
-	                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
-	                              <h5>{{n.mo}}/{{n.an}}:</h5> 
+	               			<div class="row">
+                    		{% if n.diff |int > 0  %}
+	                        <div class="col-md-2 col-sm-2 col-xs-2" style="text-align:right">
+	                              <h6>{{n.mo}}/{{n.an}}</h6> 
 	                        </div>
-	                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
-	                             <h5 class="count">{{n.diff }} Kwh</h5> 
+	                        <div class="col-md-10 col-sm-10 col-xs-10 dataPercent" data-percent="{{ (n.diff/maxConsoMensuel*100)|int }}">
+	                              <h6>{{ n.diff }} Kwh</h6> 
 	                        </div>
+                    		{% endif  %}
+                    		</div>
 				        {% endfor %}
                     </div>
                 </div>
@@ -590,6 +599,11 @@ h3 small {
                     spans[i].style.display = 'none';
                 }
         }
+
+		$('.dataMensuel div.dataPercent').each(function(){
+		  var percent = $(this).data("percent")+'%';
+		  $(this).children("h6").css('width', percent);
+		});
 
 
     </script>
