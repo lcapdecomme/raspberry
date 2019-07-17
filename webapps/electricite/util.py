@@ -2,6 +2,8 @@
 # [START imports]
 from datetime import datetime, timedelta
 from collections import namedtuple
+import random
+import string
 
 TENSION_VOLT = 230
 tarifHP = 0.16360 
@@ -31,6 +33,15 @@ Elec_bilan = namedtuple('Elec_bilan', 'periodeTarifaire, intensiteInstant, inten
         statMinhp0,statMinhp1,statMinhp2,statMinhp3,statMinhp4,statMinhp5,statMinhp6,statMinhp7, \
         statMinhc0,statMinhc1,statMinhc2,statMinhc3,statMinhc4,statMinhc5,statMinhc6,statMinhc7')
 
+
+def randomString(stringLength=5):
+	#Generate a random string of fixed length
+	letters = string.ascii_lowercase
+	return ''.join(random.choice(letters) for i in range(stringLength))
+
+def randomInt(intLength=100):
+	#Generate a random string of fixed length
+	return random.randint(1,intLength)
 
 
 def convertDate(dateTraitement):

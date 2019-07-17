@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, 'libs')
 import os, jinja2, webapp2, requests, json
 from datetime import datetime
-from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getjourMois, Elec_bilan, getSommesAn, getJuillet, getValueMax
+from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getjourMois, Elec_bilan, getSommesAn, getJuillet, getValueMax, randomString, randomInt
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -184,6 +184,8 @@ class pagePrincipale(webapp2.RequestHandler):
             'statMinhc5' : bilan.statMinhc5,
             'statMinhc6' : bilan.statMinhc6,
             'statMinhc7' : bilan.statMinhc7,
+            'randomString' : randomString(),
+            'randomInt' : randomInt(),
             'mensuel' : data_mensuel,
             'maxConsoMensuel' : maxConsoMensuel,
             'minConsoMensuel' : minConsoMensuel,

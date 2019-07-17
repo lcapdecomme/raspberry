@@ -11,15 +11,15 @@
     <meta name="description" content="Consommation électrique">
     <meta name="author" content="L. Capdecomme">
 
-    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css" />
-    <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.min.css?{{randomString}}={{randomInt}}" />
+    <link rel="stylesheet" type="text/css" href="/static/css/font-awesome.min.css?{{randomString}}={{randomInt}}">
     <!-- Google Fonts call. Font Used Open Sans & Raleway -->
     <link href="http://fonts.googleapis.com/css?family=Raleway:400,300" rel="stylesheet" type="text/css">
     <link href="http://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
 
-    <script src="/static/js/chart.min.js"></script>
-    <script src="/static/js/jquery-3.4.1.min.js"></script>
-    <script src="/static/js/temp.js"></script>
+    <script src="/static/js/chart.min.js?{{randomString}}={{randomInt}}"></script>
+    <script src="/static/js/jquery-3.4.1.min.js?{{randomString}}={{randomInt}}"></script>
+    <script src="/static/js/temp.js?{{randomString}}={{randomInt}}"></script>
 
 </head>
 
@@ -49,7 +49,7 @@ body {
     white-space: nowrap;
 }
 .tile_stats_count .count {
-    font-size: 34px;
+    font-size: 28px;
     line-height: 47px;
     font-weight: 600;
 }
@@ -94,6 +94,9 @@ nav {
 	margin-top: 7px;
 	margin-bottom: 7px;
 }
+.pic_date h5.annee {
+	font-weight: bold;
+}
 h3 small {
     font-size: 60%;
 }
@@ -108,7 +111,7 @@ h3 small {
     width: 40%;
 }
 .pic_date {
-    padding-left: 50px;
+    padding-left: 25px;
 }
 .pic_val {
     padding-right: 20px;
@@ -121,8 +124,12 @@ h3 small {
 	color: rgb(59, 71, 79);
 	border: solid 1px rgb(54, 162, 235);
 	padding: 5px;
+}
+.dataMensuel div div h6 {
+	padding : 5px 2px 5px 2px;
 	margin: 2px;
 }
+
 
 </style>
 
@@ -132,6 +139,8 @@ h3 small {
             <div class="navbar-header pull-left">
                 <span class="lead"> <i class="fa fa-flash"></i> Suivi Elect.</span> | {{date }} {{ heure }} 
             </div>
+		    <button id="refresh" class="btn btn-sm btn-info pull-right" type="submit">Rafra&icirc;chir</button>
+
         </div>
     </nav>
 
@@ -240,47 +249,55 @@ h3 small {
 
             <div class="col-md-4 col-sm-6 col-xs-12">
                 <div class="panel">
-                    <h3>Suivi annuel (Janvier)</h3> 
+                    <h3>Conso. annuelle (Au premier Janvier)</h3> 
 			        {% for a in annuel %}
-					<div class="row">
-                        <div class="col-md-2 col-sm-2 col-xs-2 pic_date">
-                              <h5>{{a.an}}</h5> 
-                        </div>
-                        <div class="col-md-10 col-sm-10 col-xs-10 pic_date">
-                             <h5 class="count">{{a.value/1000 }} Kwh 
-                    		 {% if a.diff|int > 0 %}
-								 (diff. <span class="red">{{a.diff/1000 }} Kwh</span>)
-                    		  {% endif %}
-							  </h5> 
-                        </div>
-                    </div> 
+                   		 {% if a.diff|int > 0 %}
+							<div class="row">
+		                        <div class="col-md-2 col-sm-2 col-xs-2 pic_date">
+									 {%- if loop.last %}
+			                              <h5 class="libelle">Auj.</h5> 
+									 {% else %}
+			                              <h5 class="libelle">{{a.an}}</h5> 
+									 {% endif %}
+		                        </div>
+		                        <div class="col-md-10 col-sm-10 col-xs-10 pic_date">
+		                             <h5 class="count">{{a.diff/1000 }} Kwh 
+										 (relev&eacute; {{a.value/1000 }} Kwh)
+									  </h5> 
+		                        </div>
+		                    </div> 
+                   		  {% endif %}
 			        {% endfor %}
                 </div>
             </div>
 
             <div class="col-md-4 col-sm-6 col-xs-12">
                 <div class="panel">
-                    <h3>Suivi annuel (Juillet)</h3> 
+                    <h3>Conso. annuelle (Au premier Juillet)</h3> 
 			        {% for a in annuel_juillet %}
-					<div class="row">
-                        <div class="col-md-2 col-sm-2 col-xs-2 pic_date">
-                              <h5>{{a.an}}</h5> 
-                        </div>
-                        <div class="col-md-10 col-sm-10 col-xs-10 pic_date">
-                             <h5 class="count">{{a.value/1000 }} Kwh 
-                    		 {% if a.diff|int > 0 %}
-								 (diff. <span class="red">{{a.diff/1000 }} Kwh</span>)
-                    		  {% endif %}
-							  </h5> 
-                        </div>
-                    </div> 
+                   		 {% if a.diff|int > 0 %}
+							<div class="row">
+		                        <div class="col-md-2 col-sm-2 col-xs-2 pic_date">
+									 {%- if loop.last %}
+			                              <h5 class="libelle">Auj.</h5> 
+									 {% else %}
+			                              <h5 class="libelle">{{a.an}}</h5> 
+									 {% endif %}
+		                        </div>
+		                        <div class="col-md-10 col-sm-10 col-xs-10 pic_date">
+		                             <h5 class="count">{{a.diff/1000 }} Kwh 
+										 (relev&eacute; {{a.value/1000 }} Kwh)
+									  </h5> 
+		                        </div>
+		                    </div> 
+                   		  {% endif %}
 			        {% endfor %}
                 </div>
             </div>
 
             <div class="col-md-4 col-sm-6 col-xs-12">
                 <div class="panel">
-                    <h3 onclick="toggle_jour(this)">Suivi annuel (Juillet)
+                    <h3 onclick="toggle_jour(this)">Conso. annuelle (Au premier Juillet)
                     </h3>
                     <div class="graph">
                         <canvas id="chartJuillet"></canvas>
@@ -293,66 +310,66 @@ h3 small {
                 <div class="panel">
                     <h3>Pic de consommation</h3>     
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                               <h5>{{ statMaxDate0 }} </h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal0/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMaxDate1 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal1/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMaxDate2 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal2/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMaxDate3 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal3/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMaxDate4 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal4/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMaxDate5 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal5/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMaxDate6 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal6/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMaxDate7 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count red">{{ statMaxTotal7/1000 }} Kwh</h5> 
                         </div>
                     </div> 
@@ -364,66 +381,66 @@ h3 small {
                 <div class="panel">
                     <h3>Plus faible consommation</h3>     
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                               <h5>{{ statMinDate0 }} </h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal0/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMinDate1 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal1/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMinDate2 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal2/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMinDate3 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal3/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMinDate4 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal4/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMinDate5 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal5/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMinDate6 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal6/1000 }} Kwh</h5> 
                         </div>
                     </div> 
                     <div class="row">
-                        <div class="col-md-6 col-sm-6 col-xs-6 pic_date">
+                        <div class="col-md-4 col-sm-4 col-xs-4 pic_date">
                              <h5>{{ statMinDate7 }}</h5> 
                         </div>
-                        <div class="col-md-6 col-sm-6 col-xs-6">
+                        <div class="col-md-8 col-sm-8 col-xs-8">
                              <h5 class="count green">{{ statMinTotal7/1000 }} Kwh</h5> 
                         </div>
                     </div> 
@@ -443,7 +460,7 @@ h3 small {
 				        {% for n in mensuel %}
 	               			<div class="row">
                     		{% if n.diff |int > 0  %}
-	                        <div class="col-md-2 col-sm-2 col-xs-2" style="text-align:right">
+	                        <div class="col-md-2 col-sm-2 col-xs-2" style="text-align:right;padding-left: 20px;">
 	                              <h6>{{n.mo}}/{{n.an}}</h6> 
 	                        </div>
 	                        <div class="col-md-10 col-sm-10 col-xs-10 dataPercent" data-percent="{{ (n.diff/maxConsoMensuel*100)|int }}">
@@ -605,6 +622,9 @@ h3 small {
 		  $(this).children("h6").css('width', percent);
 		});
 
+		$('#refresh').click(function() {
+		    location.reload();
+		});
 
     </script>
 
