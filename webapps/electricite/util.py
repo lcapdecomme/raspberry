@@ -22,6 +22,9 @@ Elec_bilan = namedtuple('Elec_bilan', 'periodeTarifaire, intensiteInstant, inten
         heure0,heure1,heure2,heure3,heure4,heure5,heure6,heure7,heure8,heure9,heure10, \
         heure11,heure12,heure13,heure14,heure15,heure16,heure17,heure18, \
         heure19,heure20,heure21,heure22,heure23, \
+        heureHier0,heureHier1,heureHier2,heureHier3,heureHier4,heureHier5,heureHier6,heureHier7,heureHier8,heureHier9,heureHier10, \
+        heureHier11,heureHier12,heureHier13,heureHier14,heureHier15,heureHier16,heureHier17,heureHier18, \
+        heureHier19,heureHier20,heureHier21,heureHier22,heureHier23, \
         mois1,mois2,mois3,mois4,mois5,mois6,mois7,mois8,mois9,mois10, \
         mois11,mois12, \
         statMaxDate0,statMaxDate1,statMaxDate2,statMaxDate3,statMaxDate4,statMaxDate5,statMaxDate6,statMaxDate7, \
@@ -52,12 +55,9 @@ def convertDate(dateTraitement):
 
 
 def dateEnClair(dateTraitement):
-	dateTemp=datetime.strftime(dateTraitement, "%d-%m-%Y")
-	dateDuJour=datetime.strftime(datetime.now(), "%d-%m-%Y")
-	if dateTemp == dateDuJour :
-		return "Aujourd'hui"
-	else:
-		return convertDate(dateTraitement)
+	dateHier=dateTraitement + timedelta(-1)
+	dateTemp=datetime.strftime(dateHier, "%d-%m-%Y")
+	return convertDate(dateHier)
 
 
 def concatDifference(chaine,val, derniereVal, ecart):
@@ -110,6 +110,37 @@ def getJour(s):
 	derniereVal, chaine, ecart =concatDifference(chaine, s.heure2, derniereVal, ecart)
 	derniereVal, chaine, ecart =concatDifference(chaine, s.heure1, derniereVal, ecart)	
 	derniereVal, chaine, ecart =concatDifference(chaine, s.heure0, derniereVal, ecart)	
+	return chaine
+
+
+def getJourHier(s):
+	ecart = 0
+	derniereVal = 0
+	chaine=""
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier23, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier22, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier21, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier20, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier19, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier18, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier17, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier16, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier15, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier14, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier13, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier12, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier11, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.heureHier10, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier9, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier8, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier7, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier6, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier5, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier4, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier3, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier2, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier1, derniereVal, ecart)	
+	derniereVal, chaine, ecart =concatDifference(chaine, s.heureHier0, derniereVal, ecart)	
 	return chaine
 
 
@@ -359,6 +390,63 @@ def getSommesJour(s):
 	totalJour, minJour, maxJour, der =calculIndicateurs( s.heure0, totalJour, minJour, maxJour,der)
 	if s.heure1!= "" : totalEuro = totalEuro + ((s.heure1-der)/1000*tarifHC)
 	return totalJour, minJour, maxJour, totalEuro
+
+
+
+def getSommesJourHier(s):
+	totalJourHier = 0
+	minJourHier = 9999999999999
+	maxJourHier = 0
+	der=0
+	totalEuroHier=0
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier23, totalJourHier, minJourHier, maxJourHier,der)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier22, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier23!= "" : totalEuroHier = totalEuroHier + ((s.heureHier23-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier21, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier22!= "" : totalEuroHier = totalEuroHier + ((s.heureHier22-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier20, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier21!= "" : totalEuroHier = totalEuroHier + ((s.heureHier21-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier19, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier20!= "" : totalEuroHier = totalEuroHier + ((s.heureHier20-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier18, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier19!= "" : totalEuroHier = totalEuroHier + ((s.heureHier19-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier17, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier18!= "" : totalEuroHier = totalEuroHier + ((s.heureHier18-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier16, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier17!= "" : totalEuroHier = totalEuroHier + ((s.heureHier17-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier15, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier16!= "" : totalEuroHier = totalEuroHier + ((s.heureHier16-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier14, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier15!= "" : totalEuroHier = totalEuroHier + ((s.heureHier15-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier13, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier14!= "" : totalEuroHier = totalEuroHier + ((s.heureHier14-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier12, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier13!= "" : totalEuroHier = totalEuroHier + ((s.heureHier13-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier11, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier12!= "" : totalEuroHier = totalEuroHier + ((s.heureHier12-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs(s.heureHier10, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier11!= "" : totalEuroHier = totalEuroHier + ((s.heureHier11-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier9, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier10!= "" : totalEuroHier = totalEuroHier + ((s.heureHier10-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier8, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier9!= "" : totalEuroHier = totalEuroHier + ((s.heureHier9-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier7, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier8!= "" : totalEuroHier = totalEuroHier + ((s.heureHier8-der)/1000*tarifHP)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier6, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier7!= "" : totalEuroHier = totalEuroHier + ((s.heureHier7-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier5, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier6!= "" : totalEuroHier = totalEuroHier + ((s.heureHier6-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier4, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier5!= "" : totalEuroHier = totalEuroHier + ((s.heureHier5-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier3, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier4!= "" : totalEuroHier = totalEuroHier + ((s.heureHier4-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier2, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier3!= "" : totalEuroHier = totalEuroHier + ((s.heureHier3-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier1, totalJourHier, minJourHier, maxJourHier,der)	
+	if s.heureHier2!= "" : totalEuroHier = totalEuroHier + ((s.heureHier2-der)/1000*tarifHC)
+	totalJourHier, minJourHier, maxJourHier, der =calculIndicateurs( s.heureHier0, totalJourHier, minJourHier, maxJourHier,der)
+	if s.heureHier1!= "" : totalEuroHier = totalEuroHier + ((s.heureHier1-der)/1000*tarifHC)
+	return totalJourHier, minJourHier, maxJourHier, totalEuroHier
 
 
 

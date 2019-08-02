@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, 'libs')
 import os, jinja2, webapp2, requests, json
 from datetime import datetime
-from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getjourMois, Elec_bilan, getSommesAn, getJuillet, getValueMax, randomString, randomInt
+from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getJourHier, getjourMois, getSommesJourHier, Elec_bilan, getSommesAn, getJuillet, getValueMax, randomString, randomInt
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -67,6 +67,7 @@ class pagePrincipale(webapp2.RequestHandler):
 		consoJourHcVeille = diffNombre(consoJourHc, consoJourHcVeille) 
 		consoJourHpVeille = diffNombre(consoJourHp, consoJourHpVeille) 
 		totalJour, minJour, maxJour, totalJourEuro = getSommesJour(bilan)
+		totalJourHier, minJourHier, maxJourHier, totalJourEuroHier = getSommesJourHier(bilan)
 		totalMois, minMois, maxMois, totalMoisEuro = getSommesMois(bilan)
 		
 		serieAn, labelMois, totalAn, totalAnEuros, minAn, maxAn = getSommesAn(data_mensuel)
@@ -102,6 +103,13 @@ class pagePrincipale(webapp2.RequestHandler):
         	'minJour' : format_int(minJour),
         	'maxJour' : format_int(maxJour),
 			'serieJour' : getJour(bilan),
+
+
+        	'totalJourHier' : format_int(totalJourHier),
+        	'totalJourEuroHier' : totalJourEuroHier,
+        	'minJourHier' : format_int(minJourHier),
+        	'maxJourHier' : format_int(maxJourHier),
+			'serieJourHier' : getJourHier(bilan),
 
         	'totalMois' : format_int(totalMois),
         	'totalMoisEuro' : totalMoisEuro,
