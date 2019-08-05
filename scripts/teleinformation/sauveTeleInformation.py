@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 
 # 0. Init variable 
 SERIAL = '/dev/ttyAMA0'
-MONGODB_URI = 'mongodb://credential@url:port/base'
+MONGODB_URI = 'mongodb://<user>:<password>@<base>.mongolab.com:37415/<domaine>' 
 MONGODB_COLLECTION='edf'
 MONGODB_COLLECTION_BILAN='edf_bilan'
 MONGODB_COLLECTION_MENSUEL='edf_bilan_mensuel'
@@ -122,9 +122,13 @@ def initStat():
     for num in range(0,24): 
 	data["heureHier" + str(num)]=""
  
-    #Semaine & mois : valeur min et max sur 30 derniers jours
+    #Semaine & mois : valeur sur 30 derniers jours
     for num in range(1,31): 
 	data["jour" + str(num)]=""
+
+    #Semaine & mois : valeur sur 30 derniers jours il y a un an
+    for num in range(1,31): 
+	data["jourUnAn" + str(num)]=""
 
     #Annee : valeur min et max sur 12 derniers mois
     for num in range(1,13): 
@@ -157,6 +161,29 @@ def completeStat():
 
            for num2 in range(depart,num): 
   	       data["jour" + str(num2)]= data["jour" + str(num2-1)] + moyennePeriode;
+
+           depart=0
+           valDepart=0
+           valFin=0
+
+    for num in range(1,31): 
+        # On cherche des jours qui n'ont pas de valeurs
+        if num>1 and data["jourUnAn" + str(num)] == "" and depart==0:
+           depart=num
+
+        if data["jourUnAn" + str(num)] <> "" and depart<>0:
+           total=0
+           nbElements=0
+           print "bouche les trous du jour UnAn", depart, " au jour ", num - 1
+           valDepart= data["jourUnAn" + str(depart-1)]
+           valFin= data["jourUnAn" + str(num)]
+           total=valFin-valDepart
+           nbElements=num-depart+1
+           moyennePeriode=total/nbElements
+           print "Ajoute en moyenne UnAn", moyennePeriode, " - elements : ", nbElements
+
+           for num2 in range(depart,num): 
+  	       data["jourUnAn" + str(num2)]= data["jourUnAn" + str(num2-1)] + moyennePeriode;
 
            depart=0
            valDepart=0
@@ -264,6 +291,8 @@ jour = datetime.strftime(dateDuJour, "%d")
 mois = datetime.strftime(dateDuJour, "%m")
 annee = datetime.strftime(dateDuJour, "%Y")
 start_date_mois = dateDuJour + timedelta(-30)
+start_date_mois_min = dateDuJour + timedelta(-395)
+start_date_mois_max = dateDuJour + timedelta(-365)
 start_date_an = dateDuJour + timedelta(-360)
 print "h:",heure," j:", jour, " m:", mois, " année:", annee, " => Passé:", start_date_mois, " ==> Passé an:", start_date_an
 dateHier=dateDuJour + timedelta(-1)
@@ -315,7 +344,7 @@ for document in cursor:
        data['heureHier'+str(heureTrait)] = consommation(document)
        print "Heure Hier",str(heureTrait), ":", consommation(document)
 
-    # 2. Statistique 30 jours précédent               
+    # 2. Statistique 30 jours precedents
     if start_date_mois <= date :
        #Retourne l'index dans le tableau de 30 elements en fonction de la date du jour
        #Ex. on est le 6. Si jourTrait=6, cela retourne 30 (30+6-6),
@@ -327,7 +356,19 @@ for document in cursor:
           data['jour'+str(jourTableau)]= consommation(document)
           # print "Jour ",str(jourTableau), ":", consommation(document)
 
-    # 3. Statistique 360 jours précédent dans un tableau de 12 valeurs (2/mois)              
+    # 2. bis Statistique 30 jours precedents il y a un an
+    if start_date_mois_min <= date and start_date_mois_max >= date :
+       #Retourne l'index dans le tableau de 30 elements en fonction de la date du jour
+       #Ex. on est le 6. Si jourTrait=6, cela retourne 30 (30+6-6),
+       #si jourTrait=3, cela retourne 27 (30-6+3),
+       #si jourTrtait=15, cela retourne 9 (30-6-15)
+       jourTableau=395-days_diff(dateDuJour, date)
+       #Si minuit, on sauve la consommation ?
+       if int(heureTrait) == 0 and int(minuteTrait) == 0:
+          data['jourUnAn'+str(jourTableau)]= consommation(document)
+          print date, " -- Jour il y a un an : ",str(jourTableau), ":", consommation(document)
+
+    # 3. Statistique 360 jours precedent dans un tableau de 12 valeurs
     if start_date_an <= date :
        #Retourne l'index dans le tableau de 12 elements en fonction de la date du jour
        #Ex. on est en fevrier. cela retourne 12,
@@ -359,7 +400,7 @@ for document in cursor:
        hpHier=hp
 
 
-    # 5. Recherche des consommations en début de chaque mois             
+    # 5. Recherche des consommations en debut de chaque mois             
     if int(jourTrait) == 1 and int(heureTrait) == 0 and int(minuteTrait) == 0:
        data_mensuel = {}
        data_mensuel['an']= str(int(anneeTrait))
@@ -367,9 +408,8 @@ for document in cursor:
        data_mensuel['numMois']= (int(anneeTrait)*12)+int(moisTrait)
        data_mensuel['value']= consommation(document)
        list_data_mensuel.append(data_mensuel) 
-       #print "Stat Mensuel trouve", str(anneeTrait)+str(moisTrait),":", document['heuresCreuses'],"-", document['heuresPleines']
+       print "Stat Mensuel trouve", str(anneeTrait)+str(moisTrait),":", document['heuresCreuses'],"-", document['heuresPleines']," =Conso :",consommation(document)
        #print data_mensuel
-       #print moisTrait,"/",anneeTrait,"===>","HC/HP", int(document['heuresCreuses']), "-",int(document['heuresPleines'])
 
 
     # 6. Recherche des consommations en debut de chaque annee             

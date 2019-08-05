@@ -231,9 +231,11 @@ font-size:10px;
                     <h3 onclick="toggle_jour(this)">30 jours :
                         <span class="count green" style="display:inline;">{{ totalMois }} Wh</span> 
                         <span class="count green" style="display:none;">{{ totalMoisEuro }} &euro;</span>
+						(<span class="count blue" style="display:inline;">{{totalMoisAn}} Wh</span> 
+                        <span class="count blue" style="display:none;">{{totalMoisAnEuro}} &euro;</span>)
                         <div>
-                            <small>min. : <b> {{ minMois }} Wh</b></small>&nbsp;&nbsp;&nbsp;
-                            <small>max. : <b> {{ maxMois }} Wh</b></small>
+                            <small>min. : <b> {{ minMois }} Wh</b> (<b class="blue">{{ minMoisAn }} Wh</b>)</small>&nbsp;
+                            <small>max. : <b> {{ maxMois }} Wh</b> (<b class="blue">{{ maxMoisAn }} Wh</b>)</small>
                         </div>
                     </h3>
                     <div class="graph">
@@ -566,18 +568,28 @@ font-size:10px;
             labels: [ {{ jourMois|safe() }} ],
             datasets: [
             {
-					backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
+					label: '30 derniers jours',
+				    type: 'bar',
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
 					borderColor: window.chartColors.blue,
 					borderWidth: 1,
                 	data: [{{ serieMois }} ]
+            },
+			{
+					label: 'Il y a un an',
+				    type: 'line',
+					backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
+					borderColor: window.chartColors.blue,
+					borderWidth: 1,
+                	data: [{{ serieMoisAn }} ]
             }
             ]
         };
         var ctxMois = document.getElementById("chartMois").getContext("2d");
         var myLineChartMois = new Chart(ctxMois, {
-			type: 'line',
+			type: 'bar',
 			data: dataMois,
-			options: options2});
+			options: options1});
 
 
 

@@ -19,6 +19,10 @@ Elec_bilan = namedtuple('Elec_bilan', 'periodeTarifaire, intensiteInstant, inten
         jour11,jour12,jour13,jour14,jour15,jour16,jour17,jour18, \
         jour19,jour20,jour21,jour22,jour23,jour24,jour25,jour26, \
         jour27,jour28,jour29,jour30, \
+		jourUnAn1,jourUnAn2,jourUnAn3,jourUnAn4,jourUnAn5,jourUnAn6,jourUnAn7,jourUnAn8,jourUnAn9,jourUnAn10, \
+		jourUnAn11,jourUnAn12,jourUnAn13,jourUnAn14,jourUnAn15,jourUnAn16,jourUnAn17,jourUnAn18, \
+		jourUnAn19,jourUnAn20,jourUnAn21,jourUnAn22,jourUnAn23,jourUnAn24,jourUnAn25,jourUnAn26, \
+		jourUnAn27,jourUnAn28,jourUnAn29,jourUnAn30, \
         heure0,heure1,heure2,heure3,heure4,heure5,heure6,heure7,heure8,heure9,heure10, \
         heure11,heure12,heure13,heure14,heure15,heure16,heure17,heure18, \
         heure19,heure20,heure21,heure22,heure23, \
@@ -181,6 +185,43 @@ def getMois(s):
 	return chaine
 
 
+def getMoisAn(s):
+	ecart = 0
+	derniereVal = 0
+	chaine=""
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn30, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn29, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn28, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn27, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn26, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn25, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn24, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn23, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn22, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn21, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn20, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn19, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn18, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn17, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn16, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn15, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn14, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn13, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn12, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn11, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine,s.jourUnAn10, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn9, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn8, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn7, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn6, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn5, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn4, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn3, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn2, derniereVal, ecart)
+	derniereVal, chaine, ecart =concatDifference(chaine, s.jourUnAn1, derniereVal, ecart)
+	return chaine
+
+
 # Retourne la valeur max de la liste mensuel 
 def getValueMax(liste):
 	maxValue=0
@@ -333,6 +374,74 @@ def getSommesMois(s):
 	totalMois, minMois, maxMois, der =calculIndicateurs( s.jour1, totalMois, minMois, maxMois,der)	
 	if s.jour2!= "" : totalEuro = totalEuro + ((s.jour2-der)/1000*tarifHB)
 	return totalMois, minMois, maxMois, totalEuro
+
+
+def getSommesMoisAn(s):
+	totalMoisAn = 0
+	minMoisAn = 9999999999999
+	maxMoisAn = 0
+	der=0
+	totalEuro=0
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn30, totalMoisAn, minMoisAn, maxMoisAn,der)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn29, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn30!= "" : totalEuro = totalEuro + ((s.jourUnAn30-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn28, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn29!= "" : totalEuro = totalEuro + ((s.jourUnAn29-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn27, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn28!= "" : totalEuro = totalEuro + ((s.jourUnAn28-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn26, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn27!= "" : totalEuro = totalEuro + ((s.jourUnAn27-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn25, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn26!= "" : totalEuro = totalEuro + ((s.jourUnAn26-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn24, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn25!= "" : totalEuro = totalEuro + ((s.jourUnAn25-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn23, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn24!= "" : totalEuro = totalEuro + ((s.jourUnAn24-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn22, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn23!= "" : totalEuro = totalEuro + ((s.jourUnAn23-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn21, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn22!= "" : totalEuro = totalEuro + ((s.jourUnAn22-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn20, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn21!= "" : totalEuro = totalEuro + ((s.jourUnAn21-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn19, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn20!= "" : totalEuro = totalEuro + ((s.jourUnAn20-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn18, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn19!= "" : totalEuro = totalEuro + ((s.jourUnAn19-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn17, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn18!= "" : totalEuro = totalEuro + ((s.jourUnAn18-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn16, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn17!= "" : totalEuro = totalEuro + ((s.jourUnAn17-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn15, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn16!= "" : totalEuro = totalEuro + ((s.jourUnAn16-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn14, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn15!= "" : totalEuro = totalEuro + ((s.jourUnAn15-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn13, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn14!= "" : totalEuro = totalEuro + ((s.jourUnAn14-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn12, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn13!= "" : totalEuro = totalEuro + ((s.jourUnAn13-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn11, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn12!= "" : totalEuro = totalEuro + ((s.jourUnAn12-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs(s.jourUnAn10, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn11!= "" : totalEuro = totalEuro + ((s.jourUnAn11-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn9, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn10!= "" : totalEuro = totalEuro + ((s.jourUnAn10-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn8, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn9!= "" : totalEuro = totalEuro + ((s.jourUnAn9-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn7, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn8!= "" : totalEuro = totalEuro + ((s.jourUnAn8-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn6, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn7!= "" : totalEuro = totalEuro + ((s.jourUnAn7-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn5, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn6!= "" : totalEuro = totalEuro + ((s.jourUnAn6-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn4, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn5!= "" : totalEuro = totalEuro + ((s.jourUnAn5-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn3, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn4!= "" : totalEuro = totalEuro + ((s.jourUnAn4-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn2, totalMoisAn, minMoisAn, maxMoisAn,der)
+	if s.jourUnAn3!= "" : totalEuro = totalEuro + ((s.jourUnAn3-der)/1000*tarifHB)
+	totalMoisAn, minMoisAn, maxMoisAn, der =calculIndicateurs( s.jourUnAn1, totalMoisAn, minMoisAn, maxMoisAn,der)	
+	if s.jourUnAn2!= "" : totalEuro = totalEuro + ((s.jourUnAn2-der)/1000*tarifHB)
+	return totalMoisAn, minMoisAn, maxMoisAn, totalEuro
 
 
 

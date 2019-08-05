@@ -4,7 +4,9 @@ import sys
 sys.path.insert(0, 'libs')
 import os, jinja2, webapp2, requests, json
 from datetime import datetime
-from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getJourHier, getjourMois, getSommesJourHier, Elec_bilan, getSommesAn, getJuillet, getValueMax, randomString, randomInt
+from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getMoisAn, \
+			getJourHier, getjourMois, getSommesJourHier, Elec_bilan, getSommesMoisAn, getSommesAn, getJuillet, getValueMax, \
+			randomString, randomInt
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -17,10 +19,10 @@ CLEF="<clef>"
 
 http_start = "https://api.mongolab.com/api/1/"
 
-http_type = "databases/<base>/collections/edf_bilan"
-http_type_mensuel = "databases/<base>/collections/edf_bilan_mensuel"
-http_type_annuel = "databases/<base>/collections/edf_bilan_annuel"
-http_type_annuel_juillet = "databases/<base>/collections/edf_bilan_annuel_juillet"
+http_type = "databases/edf/collections/edf_bilan"
+http_type_mensuel = "databases/edf/collections/edf_bilan_mensuel"
+http_type_annuel = "databases/edf/collections/edf_bilan_annuel"
+http_type_annuel_juillet = "databases/edf/collections/edf_bilan_annuel_juillet"
 
 api = {"apiKey": CLEF,"f":'{"_id": 0}'}
 api_order_mensuel = {"apiKey": CLEF,"f":'{"_id": 0}', "s":'{"numMois": 1}'}
@@ -69,6 +71,7 @@ class pagePrincipale(webapp2.RequestHandler):
 		totalJour, minJour, maxJour, totalJourEuro = getSommesJour(bilan)
 		totalJourHier, minJourHier, maxJourHier, totalJourEuroHier = getSommesJourHier(bilan)
 		totalMois, minMois, maxMois, totalMoisEuro = getSommesMois(bilan)
+		totalMoisAn, minMoisAn, maxMoisAn, totalMoisAnEuro = getSommesMoisAn(bilan)
 		
 		serieAn, labelMois, totalAn, totalAnEuros, minAn, maxAn = getSommesAn(data_mensuel)
 			
@@ -111,11 +114,16 @@ class pagePrincipale(webapp2.RequestHandler):
         	'maxJourHier' : format_int(maxJourHier),
 			'serieJourHier' : getJourHier(bilan),
 
-        	'totalMois' : format_int(totalMois),
-        	'totalMoisEuro' : totalMoisEuro,
-        	'minMois' : format_int(minMois),
-        	'maxMois' : format_int(maxMois),
+			'totalMois' : format_int(totalMois),
+			'totalMoisEuro' : totalMoisEuro,
+			'minMois' : format_int(minMois),
+			'maxMois' : format_int(maxMois),
+			'totalMoisAn' : format_int(totalMoisAn),
+			'totalMoisAnEuro' : totalMoisAnEuro,
+			'minMoisAn' : format_int(minMoisAn),
+			'maxMoisAn' : format_int(maxMoisAn),
         	'serieMois' : getMois(bilan),
+        	'serieMoisAn' : getMoisAn(bilan),
 			'jourMois' : getjourMois(dateTraitement, getMois(bilan)),
 			
 			'serieAn' : serieAn,
