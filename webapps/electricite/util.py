@@ -234,7 +234,7 @@ def getValueMax(liste):
 	return maxValue, minValue
 
 
-# Retourne les douze dernière valeure 
+# Retourne les douze dernières valeures de l'année en cours 
 def getSommesAn(liste):
 	cpt=0
 	serieValeurs=""
@@ -244,6 +244,35 @@ def getSommesAn(liste):
 	maxi=-1
 	
 	lastElements = liste[-12:]
+	for element in lastElements:
+		serieValeurs=serieValeurs+str(element['diff'])+","
+		nmois=mois[int(element['mo'])-1]
+		nomMois=nomMois+"'"+nmois+" "+element['an']+"',"
+		conso=int(element['diff'])
+		totalAn=totalAn+conso
+		if conso<mini:
+			mini=conso
+		if conso>maxi:
+			maxi=conso
+
+		cpt=cpt+1
+		if cpt >= 12:
+			break
+	totalAnEuros=totalAn*tarifHB
+	return serieValeurs, nomMois, totalAn, totalAnEuros, mini, maxi
+
+
+
+# Retourne les douze dernières valeures de l'année precédente 
+def getSommesAnPrec(liste):
+	cpt=0
+	serieValeurs=""
+	nomMois=""
+	totalAn = 0
+	mini=9999999999
+	maxi=-1
+	
+	lastElements = liste[-24:]
 	for element in lastElements:
 		serieValeurs=serieValeurs+str(element['diff'])+","
 		nmois=mois[int(element['mo'])-1]

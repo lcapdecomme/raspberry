@@ -213,8 +213,8 @@ font-size:10px;
                     <h3 onclick="toggle_jour(this)">Aujourd'hui:
                         <span class="count green" style="display:inline;">{{ totalJour }} Wh</span> 
                         <span class="count green" style="display:none;">{{ totalJourEuro }} &euro;</span>
-						(<span class="count blue" style="display:inline;">{{totalJourHier}} Wh</span> 
-                        <span class="count blue" style="display:none;">{{totalJourEuroHier}} &euro;</span>)
+						<span class="count blue" style="display:inline;">({{totalJourHier}} Wh)</span> 
+                        <span class="count blue" style="display:none;">({{totalJourEuroHier}} &euro;)</span>
 						<div>
                             <small>min.:<b>{{ minJour }} Wh</b> (<b class="blue">{{ minJourHier }} Wh</b>)</small>&nbsp;
                             <small>max.:<b>{{ maxJour }} Wh</b> (<b class="blue">{{ maxJourHier }} Wh</b>)</small>
@@ -231,8 +231,8 @@ font-size:10px;
                     <h3 onclick="toggle_jour(this)">30 jours :
                         <span class="count green" style="display:inline;">{{ totalMois }} Wh</span> 
                         <span class="count green" style="display:none;">{{ totalMoisEuro }} &euro;</span>
-						(<span class="count blue" style="display:inline;">{{totalMoisAn}} Wh</span> 
-                        <span class="count blue" style="display:none;">{{totalMoisAnEuro}} &euro;</span>)
+						<span class="count blue" style="display:inline;">({{totalMoisAn}} Wh)</span> 
+                        <span class="count blue" style="display:none;">({{totalMoisAnEuro}} &euro;)</span>
                         <div>
                             <small>min. : <b> {{ minMois }} Wh</b> (<b class="blue">{{ minMoisAn }} Wh</b>)</small>&nbsp;
                             <small>max. : <b> {{ maxMois }} Wh</b> (<b class="blue">{{ maxMoisAn }} Wh</b>)</small>
@@ -249,9 +249,11 @@ font-size:10px;
                     <h3 onclick="toggle_jour(this)">1 an : 
                         <span class="count green" style="display:inline;">{{ totalAn }} Kwh</span> 
                         <span class="count green" style="display:none;">{{ totalAnEuros }} &euro;</span>
+						<span class="count blue" style="display:inline;">({{totalAnPrec}} Wh)</span> 
+                        <span class="count blue" style="display:none;">({{totalAnPrecEuros}} &euro;)</span>
                         <div>
-                            <small>min. : <b> {{ minAn }} Kwh</b></small>&nbsp;&nbsp;&nbsp;
-                            <small>max. : <b> {{ maxAn }} Kwh</b></small>
+                            <small>min. : <b> {{ minAn }} Kwh (<b class="blue">{{ minAnPrec }} Kwh</b>)</b></small>&nbsp;
+                            <small>max. : <b> {{ maxAn }} Kwh (<b class="blue">{{ maxAnPrec }} Kwh</b>)</b></small>
                         </div>
                     </h3>
                     <div class="graph">
@@ -528,7 +530,7 @@ font-size:10px;
         var options2 = {
 			responsive: true,
 			legend: {
-				display: false
+				display: true
 			},
 			title: {
 				display: false
@@ -571,7 +573,7 @@ font-size:10px;
 					label: '30 derniers jours',
 				    type: 'bar',
 					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-					borderColor: window.chartColors.blue,
+					borderColor: window.chartColors.red,
 					borderWidth: 1,
                 	data: [{{ serieMois }} ]
             },
@@ -597,11 +599,20 @@ font-size:10px;
             labels: [ {{ labelMois|safe() }} ],
             datasets: [
             {
-					backgroundColor: color(window.chartColors.green).alpha(0.5).rgbString(),
-					borderColor: window.chartColors.green,
+					label: 'Cette annee',
+					backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
+					borderColor: window.chartColors.red,
 					borderWidth: 1,
-					steppedLine: true,
+					fill: true,
                 	data: [{{ serieAn }} ]
+            },
+ 			{
+					label: "L'an pass\u00e9",
+					backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
+					borderColor: window.chartColors.blue,
+					borderWidth: 1,
+					fill: false,
+                	data: [{{ serieAnPrec }} ]
             }
             ]
         };
@@ -609,7 +620,7 @@ font-size:10px;
         var myLineChartAn = new Chart(ctxAn, {
 			type: 'line',
 			data: dataAn,
-			options: options2});
+			options: options1});
 
 
 

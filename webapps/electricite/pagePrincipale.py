@@ -6,7 +6,7 @@ import os, jinja2, webapp2, requests, json
 from datetime import datetime
 from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getMoisAn, \
 			getJourHier, getjourMois, getSommesJourHier, Elec_bilan, getSommesMoisAn, getSommesAn, getJuillet, getValueMax, \
-			randomString, randomInt
+			randomString, randomInt, getSommesAnPrec
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -73,7 +73,8 @@ class pagePrincipale(webapp2.RequestHandler):
 		totalMois, minMois, maxMois, totalMoisEuro = getSommesMois(bilan)
 		totalMoisAn, minMoisAn, maxMoisAn, totalMoisAnEuro = getSommesMoisAn(bilan)
 		
-		serieAn, labelMois, totalAn, totalAnEuros, minAn, maxAn = getSommesAn(data_mensuel)
+		serieAn,labelMois, totalAn, totalAnEuros, minAn, maxAn = getSommesAn(data_mensuel)
+		serieAnPrec, labelMoisPrec, totalAnPrec, totalAnPrecEuros, minAnPrec, maxAnPrec = getSommesAnPrec(data_mensuel)
 			
 		labelJuillet, serieJuillet = getJuillet(data_annuel_juillet)
 
@@ -132,6 +133,13 @@ class pagePrincipale(webapp2.RequestHandler):
 			'totalAnEuros' : totalAnEuros,
 			'minAn' : format_int(minAn),
 			'maxAn' : format_int(maxAn),
+
+			'serieAnPrec' : serieAnPrec,
+			'labelMoisPrec' : labelMoisPrec,
+			'totalAnPrec' : format_int(totalAnPrec),
+			'totalAnPrecEuros' : totalAnPrecEuros,
+			'minAnPrec' : format_int(minAnPrec),
+			'maxAnPrec' : format_int(maxAnPrec),
 
 			'labelJuillet' : labelJuillet,
 			'serieJuillet' : serieJuillet,
