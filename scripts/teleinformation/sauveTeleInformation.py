@@ -10,9 +10,27 @@ from pymongo import MongoClient
 from datetime import datetime, timedelta
 
 
+
+months = ["Inconnu",
+          "Jan.",
+          "Fev.",
+          "Mars",
+          "Avril",
+          "Mai",
+          "Juin",
+          "Juil.",
+          "Aout",
+          "Sep.",
+          "Oct.",
+          "Nov.",
+          "Dec."]
+
+
+
+
 # 0. Init variable 
 SERIAL = '/dev/ttyAMA0'
-MONGODB_URI = 'mongodb://<user>:<password>@<base>.mongolab.com:37415/<domaine>' 
+MONGODB_URI = 'mongodb://<user>:<password>@<base>.mongolab.com:37415/<domaine>'  
 MONGODB_COLLECTION='edf'
 MONGODB_COLLECTION_BILAN='edf_bilan'
 MONGODB_COLLECTION_MENSUEL='edf_bilan_mensuel'
@@ -177,13 +195,14 @@ def completeStat():
            print "bouche les trous du jour UnAn", depart, " au jour ", num - 1
            valDepart= data["jourUnAn" + str(depart-1)]
            valFin= data["jourUnAn" + str(num)]
-           total=valFin-valDepart
-           nbElements=num-depart+1
-           moyennePeriode=total/nbElements
-           print "Ajoute en moyenne UnAn", moyennePeriode, " - elements : ", nbElements
-
-           for num2 in range(depart,num): 
-  	       data["jourUnAn" + str(num2)]= data["jourUnAn" + str(num2-1)] + moyennePeriode;
+           if valDepart != "" :
+               print "======== [", valFin, "] - [", valDepart, "]"
+               total=valFin-valDepart
+               nbElements=num-depart+1
+               moyennePeriode=total/nbElements
+               print "Ajoute en moyenne UnAn", moyennePeriode, " - elements : ", nbElements
+               for num2 in range(depart,num): 
+  	            data["jourUnAn" + str(num2)]= data["jourUnAn" + str(num2-1)] + moyennePeriode;
 
            depart=0
            valDepart=0
@@ -223,7 +242,7 @@ def completeStatMensuel():
         index=index+1
 
     obj_mensuel_prec=0
-    # Deuxieme passage pour boucher les trous
+    # Deuxieme passage pour boucher les trous et mettre le libelle du mois
     for obj_mensuel in list_data_mensuel2:
         if obj_mensuel_prec <> 0:     
            difference=int(obj_mensuel["value"])-int(obj_mensuel_prec["value"])
@@ -231,6 +250,7 @@ def completeStatMensuel():
         else:
            obj_mensuel['diff']= 0 
 
+        obj_mensuel['mois']= (months[int(obj_mensuel['mo'])]) 
         #print "Mensuel :", obj_mensuel
         obj_mensuel_prec = obj_mensuel
 
@@ -402,20 +422,26 @@ for document in cursor:
 
     # 5. Recherche des consommations en debut de chaque mois             
     if int(jourTrait) == 1 and int(heureTrait) == 0 and int(minuteTrait) == 0:
+       yy=int(anneeTrait)
+       mm=int(moisTrait)-1
+       if mm == 0:
+          mm=12
+          yy=yy-1
        data_mensuel = {}
-       data_mensuel['an']= str(int(anneeTrait))
-       data_mensuel['mo']= str(int(moisTrait))
-       data_mensuel['numMois']= (int(anneeTrait)*12)+int(moisTrait)
+       data_mensuel['an']= str(yy)
+       data_mensuel['mo']= str(mm)
+       data_mensuel['numMois']= (yy*12)+mm
        data_mensuel['value']= consommation(document)
-       list_data_mensuel.append(data_mensuel) 
-       print "Stat Mensuel trouve", str(anneeTrait)+str(moisTrait),":", document['heuresCreuses'],"-", document['heuresPleines']," =Conso :",consommation(document)
+       list_data_mensuel.append(data_mensuel)
+       print "Stat Mensuel trouve", str(yy)+str(mm),":", document['heuresCreuses'],"-", document['heuresPleines']," =Conso :",consommation(document)
        #print data_mensuel
+
 
 
     # 6. Recherche des consommations en debut de chaque annee             
     if firstRecord or (int(moisTrait) == 1 and int(jourTrait) == 1 and int(heureTrait) == 0):
        data_annuel = {}
-       data_annuel['an']= str(int(anneeTrait))
+       data_annuel['an']= str(int(anneeTrait)-1)
        data_annuel['value']= consommation(document)
        list_data_annuel.append(data_annuel) 
        #print "Stat Annuel trouve", str(anneeTrait),":", document['heuresCreuses'],"-", document['heuresPleines']
@@ -426,6 +452,7 @@ for document in cursor:
     if int(moisTrait) == 11 and int(jourTrait) == 1 and int(heureTrait) == 0:
        data_annuel_juillet = {}
        data_annuel_juillet['an']= str(int(anneeTrait))
+       data_annuel_juillet['liban']= "Nov. "+str(int(anneeTrait)-1)+"-Oct. "+str(int(anneeTrait))
        data_annuel_juillet['value']= consommation(document)
        list_data_annuel_juillet.append(data_annuel_juillet) 
        #print "Stat Annuel trouve", str(anneeTrait),":", document['heuresCreuses'],"-", document['heuresPleines']
@@ -436,13 +463,14 @@ for document in cursor:
 
 # 6.bis On ajoute enfin la derniere valeur de l'annee en cours
 data_annuel = {}
-data_annuel['an']= str(int(anneeTrait)+1)
+data_annuel['an']= str(int(anneeTrait))
 data_annuel['value']= consommation(document)
 list_data_annuel.append(data_annuel) 
 # 6.ter On ajoute enfin la derniere valeur de l'annee en cours pour la collection de juillet
 data_annuel = {}
-data_annuel['an']= str(int(anneeTrait)+1)
+data_annuel['an']= str(int(anneeTrait))
 data_annuel['value']= consommation(document)
+data_annuel['liban']= "Nov. "+str(int(anneeTrait)-1)+"-Auj."
 list_data_annuel_juillet.append(data_annuel) 
 # print "Stat Annuel trouve", str(anneeTrait),":", document['heuresCreuses'],"-", document['heuresPleines']
 

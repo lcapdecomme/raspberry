@@ -1,9 +1,8 @@
  #!/usr/bin/env python
-# NAME: voirTeleInformation.py
+# NAME: teleinfoERDF.py
 # AUTHOR: Lionel Capdecomme
 # DATE  : 24/01/2016
 # COMMENT: Lecture des trames Teleinformation 
-
 import serial, sys
 # 1. Ouverture du port serie
 SERIAL = '/dev/ttyAMA0'

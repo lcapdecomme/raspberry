@@ -234,6 +234,57 @@ def getValueMax(liste):
 	return maxValue, minValue
 
 
+# Retourne un tableau avec juste le nom des douze derniers mois : fevrie, janvier, decembre, etc..
+def getLabelMoisUniquement(liste):
+	cpt=0
+	nomMois=""
+	
+	lastElements = liste[-12:]
+	for element in lastElements:
+		nmois=mois[int(element['mo'])-1]
+		nomMois=nomMois+"'"+nmois+"',"
+		cpt=cpt+1
+		if cpt >= 12:
+			break
+	return nomMois
+
+
+class SimpleClass(object):
+	pass
+
+
+#Retourne les consommations annuelles d'octobre au mois courant
+def getEstimatioAnnuelle(liste):
+	my_objects = []
+	# On cherche jusqu'au mois courant 
+	# Donc si on est le 3 avril, on cherche jusqu'en mars
+	currentMonth = (datetime.now().month)-1
+	diff=0
+	an=0
+	
+	for element in liste:
+		nmois=int(element['mo'])
+		# Octobre ? raz valeur
+		if nmois==10:
+			diff = 0
+			an = "Oct. "+element['an']
+		#Ajoute la valeur
+		diff = diff+element['diff']
+		# Mois courant ? on ajoute l'objet à la liste 
+		if nmois==currentMonth and an != 0:
+			an = an + "-"+mois[nmois]+" "+element['an']
+			x = SimpleClass()
+			x.diff = diff
+			x.an = an
+			my_objects.append(x)
+			diff=0
+			an=0
+	
+	return my_objects
+
+
+
+
 # Retourne les douze dernières valeures de l'année en cours 
 def getSommesAn(liste):
 	cpt=0
@@ -273,6 +324,35 @@ def getSommesAnPrec(liste):
 	maxi=-1
 	
 	lastElements = liste[-24:]
+	for element in lastElements:
+		serieValeurs=serieValeurs+str(element['diff'])+","
+		nmois=mois[int(element['mo'])-1]
+		nomMois=nomMois+"'"+nmois+" "+element['an']+"',"
+		conso=int(element['diff'])
+		totalAn=totalAn+conso
+		if conso<mini:
+			mini=conso
+		if conso>maxi:
+			maxi=conso
+
+		cpt=cpt+1
+		if cpt >= 12:
+			break
+	totalAnEuros=totalAn*tarifHB
+	return serieValeurs, nomMois, totalAn, totalAnEuros, mini, maxi
+
+
+
+# Retourne les douze dernières valeures de l'année precédente 
+def getSommesAnPrec2(liste):
+	cpt=0
+	serieValeurs=""
+	nomMois=""
+	totalAn = 0
+	mini=9999999999
+	maxi=-1
+	
+	lastElements = liste[-36:]
 	for element in lastElements:
 		serieValeurs=serieValeurs+str(element['diff'])+","
 		nmois=mois[int(element['mo'])-1]

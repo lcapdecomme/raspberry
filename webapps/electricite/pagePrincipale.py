@@ -6,7 +6,7 @@ import os, jinja2, webapp2, requests, json
 from datetime import datetime
 from util import diffNombre, getJour, getSommesJour, getSommesMois, format_int,dateEnClair, convertir_euro, getMois, getMoisAn, \
 			getJourHier, getjourMois, getSommesJourHier, Elec_bilan, getSommesMoisAn, getSommesAn, getJuillet, getValueMax, \
-			randomString, randomInt, getSommesAnPrec
+			randomString, randomInt, getSommesAnPrec, getSommesAnPrec2, getLabelMoisUniquement, getEstimatioAnnuelle
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
@@ -14,7 +14,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     autoescape=True)
 # [END imports]
 
-
+#Clef dans profil user ou account de mlab
 CLEF="<clef>"
 
 http_start = "https://api.mongolab.com/api/1/"
@@ -73,8 +73,12 @@ class pagePrincipale(webapp2.RequestHandler):
 		totalMois, minMois, maxMois, totalMoisEuro = getSommesMois(bilan)
 		totalMoisAn, minMoisAn, maxMoisAn, totalMoisAnEuro = getSommesMoisAn(bilan)
 		
+		labelMoisUniquement = getLabelMoisUniquement(data_mensuel)
+		estimation = getEstimatioAnnuelle(data_mensuel)
+		
 		serieAn,labelMois, totalAn, totalAnEuros, minAn, maxAn = getSommesAn(data_mensuel)
 		serieAnPrec, labelMoisPrec, totalAnPrec, totalAnPrecEuros, minAnPrec, maxAnPrec = getSommesAnPrec(data_mensuel)
+		serieAnPrec2, labelMoisPrec2, totalAnPrec2, totalAnPrec2Euros, minAnPrec2, maxAnPrec2 = getSommesAnPrec2(data_mensuel)
 			
 		labelJuillet, serieJuillet = getJuillet(data_annuel_juillet)
 
@@ -127,6 +131,8 @@ class pagePrincipale(webapp2.RequestHandler):
         	'serieMoisAn' : getMoisAn(bilan),
 			'jourMois' : getjourMois(dateTraitement, getMois(bilan)),
 			
+			'labelMoisUniquement' : labelMoisUniquement,
+			
 			'serieAn' : serieAn,
 			'labelMois' : labelMois,
 			'totalAn' : format_int(totalAn),
@@ -140,6 +146,13 @@ class pagePrincipale(webapp2.RequestHandler):
 			'totalAnPrecEuros' : totalAnPrecEuros,
 			'minAnPrec' : format_int(minAnPrec),
 			'maxAnPrec' : format_int(maxAnPrec),
+
+			'serieAnPrec2' : serieAnPrec2,
+			'labelMoisPrec2' : labelMoisPrec2,
+			'totalAnPrec2' : format_int(totalAnPrec2),
+			'totalAnPrec2Euros' : totalAnPrec2Euros,
+			'minAnPrec2' : format_int(minAnPrec2),
+			'maxAnPrec2' : format_int(maxAnPrec2),
 
 			'labelJuillet' : labelJuillet,
 			'serieJuillet' : serieJuillet,
@@ -214,7 +227,9 @@ class pagePrincipale(webapp2.RequestHandler):
             'maxConsoMensuel' : maxConsoMensuel,
             'minConsoMensuel' : minConsoMensuel,
             'annuel' : data_annuel,
-            'annuel_juillet' : data_annuel_juillet
+            'annuel_juillet' : data_annuel_juillet,
+            
+            'estimation' : estimation
 			#'libelle' : libelle,
 			#'date' : dateEnClair(dateTraitement),
 			#'heure' : datetime.strftime(dateTraitement, "%H:%M"),

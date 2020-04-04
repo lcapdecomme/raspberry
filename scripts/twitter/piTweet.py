@@ -14,4 +14,3 @@ for line in sys.stdin:
     message = message + line
 
 api.update_status(status=message)
-
